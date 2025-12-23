@@ -3,13 +3,12 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
+    profiles: ["dev"] # Só roda se usar --profile dev
     container_name: tcc_postgres
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: tcc_investimentos
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-tcc_investimentos}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -22,10 +21,6 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
       PORT: 3000
-    ports:
-      - "3000:3000"
-    depends_on:
-      - postgres
     networks:
       - tcc_network
 

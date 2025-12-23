@@ -53,6 +53,10 @@ jobs:
           docker-compose pull
           docker-compose up -d --remove-orphans
 
+          # Run database migrations
+          echo "Running migrations..."
+          docker-compose exec -T backend npx prisma migrate deploy
+
   # ------------------------------------------------------------------
   # FRONTEND: Build React App -> Upload to AWS S3
   # ------------------------------------------------------------------
