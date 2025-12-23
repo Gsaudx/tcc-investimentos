@@ -12,3 +12,34 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Wallet {
+  id        String     @id @default(uuid())
+  name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  positions Position[]
+}
+
+model Asset {
+  id        String     @id @default(uuid())
+  ticker    String     @unique
+  type      String     // STOCK, OPTION
+  price     Decimal
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  positions Position[]
+}
+
+model Position {
+  id        String   @id @default(uuid())
+  walletId  String
+  assetId   String
+  quantity  Int
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  asset     Asset    @relation(fields: [assetId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([walletId, assetId])
+}

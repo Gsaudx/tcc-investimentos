@@ -1,4 +1,4 @@
-#  Sistema de Otimização de Carteiras de Investimento
+#  Sistema de Gerenciamento de Carteiras de Investimento
 
 Plataforma B2B para assessores de investimento focada em gestão de portfólio, monitoramento de derivativos e rebalanceamento inteligente de ativos.
 
