@@ -50,8 +50,8 @@ jobs:
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
           
           # Pull new image and restart
-          docker-compose pull backend
-          docker-compose up -d backend
+          docker-compose pull
+          docker-compose up -d --remove-orphans
 
   # ------------------------------------------------------------------
   # FRONTEND: Build React App -> Upload to AWS S3
