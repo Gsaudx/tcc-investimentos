@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tcc_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: tcc_investimentos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tcc_network
+
+  backend:
+    image: ${DOCKERHUB_USERNAME}/tcc-backend:latest
+    build: ./backend
+    container_name: tcc_backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - tcc_network
+
+networks:
+  tcc_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
