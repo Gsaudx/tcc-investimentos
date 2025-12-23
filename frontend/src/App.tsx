@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Activity, Database, Server, CheckCircle2, XCircle } from 'lucide-react'
+import { Database, Server, CheckCircle2, XCircle } from 'lucide-react'
 
 function App() {
   const [apiStatus, setApiStatus] = useState<'loading' | 'online' | 'offline'>('loading')
