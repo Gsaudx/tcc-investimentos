@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Database, Server, CheckCircle2, XCircle } from 'lucide-react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/react-query';
 
-function App() {
+function AppContent() {
   const [apiStatus, setApiStatus] = useState<'loading' | 'online' | 'offline'>(
     'loading',
   );
@@ -27,6 +29,7 @@ function App() {
       } catch (error) {
         setApiStatus('offline');
         setDbStatus('disconnected');
+        console.error('Health check failed:', error);
       }
     };
 
@@ -130,4 +133,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
+  );
+}
