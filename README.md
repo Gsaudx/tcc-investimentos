@@ -20,32 +20,61 @@ Usamos **Colocation**: O código vive perto de onde é usado.
 - **Features:** Cada pasta em features/ contém tudo que uma funcionalidade precisa (api, componentes, rotas).
 - **Shared:** Apenas componentes genéricos (UI Kit) ficam em components/ui.
 
-##  Estrutura de Pastas
+##  Estrutura de Pastas (Guia de Referência Estrito)
 
-### Backend (/backend/src)
-```
-common/              # Decorators, Guards, Filters globais
-config/              # Validação de variáveis de ambiente (Zod)
-modules/             # <--- SEU CÓDIGO VIVE AQUI
-   optimization/
-       dto/          # Contratos de entrada/saída
-       entities/     # Regras de negócio puras
-       ...controller/service
-    wallet/
- app.module.ts
+### 1. Backend: Modular Monolith (`/backend/src`)
+```text
+src/
+├── common/                             # Código reutilizável GLOBALMENTE (não atrelado a negócio)
+│   ├── decorators/                     # Ex: @CurrentUser(), @Public()
+│   ├── filters/                        # Ex: HttpExceptionFilter
+│   ├── guards/                         # Ex: JwtAuthGuard
+│   └── pipes/                          # Ex: ParseIntPipe customizado
+├── config/                             # Configurações de ambiente (env vars, validação Zod)
+├── modules/                            # DOMÍNIOS DE NEGÓCIO (Onde a mágica acontece)
+│   ├── {domain}/                       # Ex: assets, wallet, optimization
+│   │   ├── dto/                        # Contratos de dados (Input/Output)
+│   │   │   ├── create-{domain}.dto.ts  # Com class-validator
+│   │   │   └── update-{domain}.dto.ts
+│   │   ├── entities/                   # Regras de negócio puras / Interfaces de Domínio
+│   │   ├── {domain}.controller.ts      # Rotas HTTP (apenas orquestração)
+│   │   ├── {domain}.service.ts         # Regra de Negócio e chamadas ao Prisma
+│   │   └── {domain}.module.ts          # Definição de dependências
+└── prisma/                             # Schema do Banco de Dados
 ```
 
-### Frontend (/frontend/src)
+### 2. Frontend: Feature-Based Architecture (`/frontend/src`)
+```text
+src/
+├── assets/                 # Imagens, fontes, ícones estáticos globais
+├── components/             # Componentes VISUAIS compartilhados (Dumb Components)
+│   ├── ui/                 # Biblioteca de UI (Shadcn, Radix) - Botões, Inputs
+│   └── layout/             # Estruturas de página (Sidebar, Header, PageWrapper)
+├── config/                 # Configurações globais (env vars, constantes)
+├── features/               # FUNCIONALIDADES DO SISTEMA (Smart Components)
+│   ├── {feature}/          # Ex: dashboard, optimization, assets
+│   │   ├── api/            # Hooks do TanStack Query (ex: useGetAssets.ts)
+│   │   ├── components/     # Componentes exclusivos desta feature
+│   │   ├── hooks/          # Hooks de lógica exclusivos desta feature
+│   │   ├── types/          # Tipagem TypeScript exclusiva desta feature
+│   │   └── index.ts        # Ponto de entrada (exporta a Page principal)
+├── hooks/                  # Hooks genéricos globais (ex: useDebounce, useTheme)
+├── lib/                    # Configurações de libs (axios, queryClient, utils)
+├── pages/                  # Roteamento (apenas importa a feature e renderiza)
+└── services/               # (Opcional) Camada de API crua se não usar Hooks direto
 ```
- components/ui/       # ShadcnUI e Design System
- features/            # <--- SEU CÓDIGO VIVE AQUI
-    optimization/
-       api/           # React Query hooks (useOtimizacao)
-       components/    # Tabelas/Gráficos específicos
-       routes/        # Rotas internas da feature
- lib/                 # Configurações (Axios, QueryClient)
- pages/               # Montagem das páginas (Roteamento)
-```
+
+### 3. Árvore de Decisão (Onde salvo meu arquivo?)
+
+**Backend:**
+*   "É uma regra de negócio de Investimentos?" -> `modules/investments`
+*   "É uma validação genérica de CPF?" -> `common/validators`
+*   "É uma configuração de conexão com API externa?" -> `config/` ou `modules/integrations`
+
+**Frontend:**
+*   "Esse botão é usado em várias telas?" -> `components/ui`
+*   "Esse gráfico só aparece no Dashboard?" -> `features/dashboard/components`
+*   "Essa chamada de API busca dados do usuário?" -> `features/auth/api` ou `features/user/api`
 
 ##  Guia de Desenvolvimento
 
