@@ -13,6 +13,9 @@ build/
 # Testing
 coverage/
 
+# Prisma
+src/generated/
+
 # IDEs and Editors
 .vscode/
 .idea/
