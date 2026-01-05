@@ -49,4 +49,7 @@ async function bootstrap() {
     logger.log(`📑 Swagger Documentation: http://localhost:${port}/api`);
   }
 }
-bootstrap();
+
+bootstrap().catch((err) => {
+  new Logger('Bootstrap').error('Error starting application', err);
+});
