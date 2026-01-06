@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { HttpExceptionFilter } from '@/common/filters';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -16,7 +17,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // 2. Validação Global (Pipes)
+  // 2. Filtro de Exceções Global (Padroniza respostas de erro)
+  app.useGlobalFilters(new HttpExceptionFilter());
+
+  // 3. Validação Global (Pipes)
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // Remove propriedades não decoradas no DTO
@@ -25,7 +29,7 @@ async function bootstrap() {
     }),
   );
 
-  // 3. Swagger (Documentação Viva) - Apenas em Desenvolvimento
+  // 4. Swagger (Documentação Viva) - Apenas em Desenvolvimento
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('TCC Investimentos API')
@@ -33,9 +37,7 @@ async function bootstrap() {
         'API para gestão de carteiras e otimização (Knapsack Problem)',
       )
       .setVersion('1.0')
-      .addTag('optimization', 'Módulo de Otimização de Carteira')
-      .addTag('assets', 'Gestão de Ativos e Derivativos')
-      .addTag('wallet', 'Carteira do Cliente')
+      .addTag('Health', 'Monitoramento e status da aplicação')
       .build();
 
     const document = SwaggerModule.createDocument(app, config);

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { CheckCircle2, XCircle } from 'lucide-react';
-import type { ConnectionStatus } from '../../features/health-check/types';
+import type { ConnectionStatus } from '@/features/health-check/types';
 
 interface StatusCardProps {
   icon: ReactNode;

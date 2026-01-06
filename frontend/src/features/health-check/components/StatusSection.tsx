@@ -1,5 +1,5 @@
 import { Database, Server } from 'lucide-react';
-import { StatusCard } from '../../../components/ui/StatusCard';
+import { StatusCard } from '@/components/ui/StatusCard';
 import { useHealthCheck } from '../api/useHealthCheck';
 
 export function StatusSection() {

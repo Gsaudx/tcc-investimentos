@@ -3,23 +3,6 @@
 Plataforma de gestão de portfólio e otimização de investimentos.
 Projeto de TCC + Iniciação Científica (Algoritmo da Mochila).
 
-## Arquitetura e Padrões
-
-### Backend: Monolito Modular (NestJS)
-Não usamos arquitetura de camadas tradicional (Controller/Service/Repo) na raiz.
-Agrupamos por **Domínio de Negócio**.
-
-- **Módulos:** Cada pasta em `modules/` é um domínio isolado (ex: optimization, wallet, assets).
-- **Comunicação:** Módulos podem importar uns aos outros via `imports: []` no Module.
-- **Banco de Dados:** Prisma ORM 7.x com Driver Adapters (PostgreSQL).
-
-### Frontend: Feature-Based (React)
-Não aglomeramos componentes em uma pasta gigante.
-Usamos **Colocation**: No caso do nosso projeto, o código vive perto de onde é usado.
-
-- **Features:** Cada pasta em `features/` contém tudo que uma funcionalidade precisa (api, componentes, hooks).
-- **Shared:** Apenas componentes genéricos (UI Kit) ficam em `components/ui`.
-
 ## Stack Tecnológica
 
 | Camada | Tecnologia | Versão |
@@ -32,6 +15,430 @@ Usamos **Colocation**: No caso do nosso projeto, o código vive perto de onde é
 | **Banco** | PostgreSQL | 16 |
 | **Infra** | AWS (EC2/RDS/S3/CloudFront) | - |
 | **Proxy** | Caddy (SSL automático) | 2.x |
+
+## Arquitetura e Padrões
+
+### Backend: Monolito Modular (NestJS)
+Não usamos arquitetura de camadas tradicional (Controller/Service/Repo) na raiz.
+Agrupamos por **Domínio de Negócio**.
+
+- **Módulos:** Cada pasta em `modules/` é um domínio isolado (ex: optimization, wallet, assets).
+- **Estrutura Interna:** Módulos maiores usam subpastas (`controllers/`, `services/`, `dto/`, `__tests__/`).
+- **Shared:** Serviços compartilhados (Prisma, etc.) ficam em `shared/` com `@Global()`.
+- **Path Alias:** Usamos `@/` para imports absolutos (ex: `@/shared/prisma`).
+- **Comunicação:** Módulos podem importar uns aos outros via `imports: []` no Module.
+- **Banco de Dados:** Prisma ORM 7.x com Driver Adapters (PostgreSQL).
+
+### Frontend: Feature-Based (React)
+Não aglomeramos componentes em uma pasta gigante.
+Usamos **Colocation**: No caso do nosso projeto, o código vive perto de onde é usado.
+
+- **Features:** Cada pasta em `features/` contém tudo que uma funcionalidade precisa (api, componentes, hooks).
+- **Shared:** Apenas componentes genéricos (UI Kit) ficam em `components/ui`.
+- **Path Alias:** Usamos `@/` para imports absolutos (ex: `@/lib/axios`, `@/components/ui`).
+
+## Estrutura de Pastas
+
+### Backend (`/backend/src`)
+
+#### Módulo Simples
+**Módulo simples** (ex: `health`): Estrutura plana com controllers/, services/, dto/
+```
+src/
+├── common/                               # Código reutilizável em toda aplicação
+│   ├── decorators/                       #   Decorators customizados
+│   ├── dto/                              #   DTOs base (ApiResponse, ApiError)
+│   ├── filters/                          #   Tratamento de exceções
+│   ├── guards/                           #   Controle de acesso
+│   └── utils/                            #   Funções utilitárias
+├── config/                               # Configurações de ambiente
+├── generated/                            # Prisma Client (auto-gerado)
+├── modules/           
+│   └── {feature}/                        # Cada domínio de negócio
+│       ├── controllers/                  #   Endpoints da API
+│       ├── services/                     #   Lógica de negócio
+│       ├── dto/                          #   Formato de dados entrada/saída
+│       ├── enums/                        #   Enums do domínio
+│       ├── __tests__/                    #   Testes unitários
+│       ├── {feature}.module.ts
+│       └── index.ts                      #   Barrel exports
+├── shared/                               # Serviços globais compartilhados
+│   ├── prisma/                           #   Conexão com banco de dados
+│   └── shared.module.ts                  #   Módulo @Global()
+├── app.module.ts                         # Módulo raiz (importa SharedModule e feature modules)
+└── main.ts                               # Bootstrap: CORS, Filters, Pipes, Swagger
+```
+
+#### Módulo Complexo
+**Módulo complexo** (ex: `wallet`): Agrupa sub-funcionalidades em pastas internas.
+
+```
+modules/wallet/
+├── core/                           # CRUD da carteira
+│   ├── controllers/
+│   │   └── wallet.controller.ts    # /wallets
+│   ├── services/
+│   │   └── wallet.service.ts
+│   └── dto/
+│       └── wallet.dto.ts
+├── positions/                      # Sub-funcionalidade: posições
+│   ├── controllers/
+│   │   └── positions.controller.ts # /wallets/:id/positions
+│   ├── services/
+│   │   └── positions.service.ts
+│   └── dto/
+│       └── position.dto.ts
+├── transactions/                   # Sub-funcionalidade: transações
+│   ├── controllers/
+│   │   └── transactions.controller.ts
+│   ├── services/
+│   │   └── transactions.service.ts
+│   └── dto/
+│       └── transaction.dto.ts
+├── enums/                          # Enums compartilhados do módulo
+├── __tests__/
+├── wallet.module.ts                # Registra TODOS os controllers/services
+└── index.ts
+```
+
+```typescript
+// wallet.module.ts - registra todas as sub-funcionalidades
+@Module({
+  controllers: [
+    WalletController,       // core/
+    PositionsController,    // positions/
+    TransactionsController, // transactions/
+  ],
+  providers: [
+    WalletService,
+    PositionsService,
+    TransactionsService,
+  ],
+})
+export class WalletModule {}
+```
+
+##### `modules/` — Domínios de Negócio
+
+Cada pasta representa uma **funcionalidade isolada** do sistema. Um módulo contém tudo que precisa para funcionar.
+
+| Subpasta | Responsabilidade | Quando usar |
+|----------|------------------|-------------|
+| **controllers/** | Recebe requisições HTTP, valida entrada, chama o service e retorna resposta. | Sempre que expor um endpoint (`GET /wallets`, `POST /clients`). |
+| **services/** | Contém a lógica de negócio. Não sabe nada de HTTP. | Cálculos, validações de regra de negócio, orquestração de dados. |
+| **dto/** | Define o "contrato" de dados, o que entra e o que sai da API. | Validação automática com `class-validator`, documentação Swagger. |
+| **enums/** | Enums TypeScript específicos do domínio. Garante type-safety entre DTO, Service e Swagger. | Sempre que tiver valores fixos (`status`, `tipo`, etc.). |
+| **__tests__/** | Testes unitários do módulo. Ficam próximos do código que testam. | Testar services isoladamente com mocks. |
+
+#### Detalhamento das Pastas
+
+##### `common/` — Código Compartilhado
+
+Contém funcionalidades que **são compartilhadas** entre múltiplos módulos. Diferente de `shared/` (que tem serviços injetáveis, tipo o Prisma), aqui ficam utilitários puros.
+
+| Subpasta | O que é | Exemplo |
+|----------|---------|-----------------|
+| **decorators/** | Anotações customizadas para métodos/classes. Extraem dados ou adicionam metadados. | `@CurrentUser()` — extrai o usuário logado do token JWT e injeta no controller. Evita repetir `req.user` em todo lugar. |
+| **dto/** | DTOs base reutilizáveis em toda aplicação. Padronizam formato de respostas. | `ApiResponseDto<T>`: wrapper de sucesso. `ApiErrorResponseDto`: formato padrão de erros. |
+| **filters/** | Interceptam exceções e formatam a resposta de erro. Garantem que todos os erros sigam o mesmo padrão. | `HttpExceptionFilter` — captura erros e retorna `{ statusCode, message, timestamp }` padronizado. |
+| **guards/** | Bloqueiam ou liberam acesso a rotas. Executam **antes** do controller. | `JwtAuthGuard` — verifica se o token é válido. `RolesGuard` — verifica se o usuário tem permissão (ex: só admin pode deletar). |
+| **utils/** | Funções puras auxiliares, sem dependência do NestJS. | `formatCpf()`, `calculateAveragePrice()`, `slugify()` |
+
+```typescript
+// Exemplo: common/decorators/current-user.decorator.ts
+// Uso: @CurrentUser() user: Advisor (no controller)
+export const CurrentUser = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user; // Extraído do JWT pelo guard
+  },
+);
+
+// Exemplo: common/guards/roles.guard.ts
+// Uso: @Roles('admin') no controller
+@Injectable()
+export class RolesGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const requiredRoles = this.reflector.get<string[]>('roles', context.getHandler());
+    const { user } = context.switchToHttp().getRequest();
+    return requiredRoles.includes(user.role);
+  }
+}
+```
+
+##### `config/` — Configurações de Ambiente
+
+Centraliza variáveis de ambiente e configurações tipadas. Evita `process.env` espalhado pelo código.
+
+```typescript
+// config/database.config.ts
+export const databaseConfig = {
+  url: process.env.DATABASE_URL,
+  logging: process.env.NODE_ENV === 'development',
+};
+```
+
+**Espelhamento Frontend ↔ Backend:**
+
+| Frontend | Backend |
+|----------|---------|
+| `features/wallet/core/api/` | `modules/wallet/core/controllers/` |
+| `features/wallet/positions/api/` | `modules/wallet/positions/controllers/` |
+| `features/wallet/transactions/api/` | `modules/wallet/transactions/controllers/` |
+
+##### `shared/` — Serviços Globais
+
+Serviços que **todos os módulos** precisam acessar. Marcado com `@Global()` para não precisar importar em cada módulo.
+
+```typescript
+// shared/shared.module.ts
+@Global() // Disponível em toda aplicação automaticamente
+@Module({
+  providers: [PrismaService],
+  exports: [PrismaService],
+})
+export class SharedModule {}
+```
+
+**Exemplo: Módulo Health**
+```
+modules/health/
+├── controllers/
+│   ├── health.controller.ts   # @Controller('health')
+│   └── index.ts
+├── services/
+│   ├── health.service.ts      # Lógica de verificação
+│   └── index.ts
+├── dto/
+│   ├── health-response.dto.ts
+│   └── index.ts
+├── enums/
+│   ├── health-status.enum.ts  # HealthStatus, DatabaseStatus
+│   └── index.ts
+├── __tests__/
+│   └── health.service.spec.ts
+├── health.module.ts
+└── index.ts
+```
+
+#### Padrão de Respostas da API
+
+A API usa wrappers padronizados para garantir consistência nas respostas. Um `HttpExceptionFilter` global (registrado no `main.ts`) intercepta todas as exceções e formata automaticamente.
+
+##### Fluxo de Requisição
+
+```
+Request → Controller → Service → Controller → Response
+                ↓           ↓          ↓
+           (valida)    (processa)  (ApiResponseDto.success())
+                                        ↓
+           Se erro → throw HttpException → HttpExceptionFilter → ApiErrorResponseDto
+```
+
+##### Separação de Responsabilidades
+
+| Camada | Responsabilidade | Conhece HTTP? |
+|--------|------------------|---------------|
+| **Service** | Lógica de negócio. Retorna dados puros ou lança exceção. | ❌ Não |
+| **Controller** | Recebe request, chama service, envolve resposta com `ApiResponseDto`. | ✅ Sim |
+| **HttpExceptionFilter** | Captura exceções e formata como `ApiErrorResponseDto`. | ✅ Sim |
+
+```typescript
+// Service - retorna dados puros
+async check(): Promise<HealthResponseDto> {
+  await this.prisma.$queryRaw`SELECT 1`;
+  return { status: HealthStatus.OK, database: DatabaseStatus.CONNECTED, ... };
+}
+
+// Controller - envolve com wrapper
+async check(): Promise<ApiResponseDto<HealthResponseDto>> {
+  try {
+    const data = await this.healthService.check();
+    return ApiResponseDto.success(data);  // ← Wrapper aqui
+  } catch (error) {
+    throw new ServiceUnavailableException(message);  // ← Filter trata
+  }
+}
+```
+
+##### Resposta de Sucesso
+
+```typescript
+// common/dto/api-response.dto.ts
+{
+  "success": true,
+  "data": { ... },        // Dados retornados
+  "message": "Opcional"   // Mensagem descritiva
+}
+```
+
+##### Resposta de Erro
+
+```typescript
+// common/dto/api-error-response.dto.ts
+{
+  "success": false,
+  "statusCode": 400,
+  "message": "Dados inválidos",
+  "errors": ["email deve ser um email válido"],  // Opcional (validação)
+  "timestamp": "2026-01-06T15:30:00.000Z",
+  "path": "/api/clients"
+}
+```
+
+##### Enums para Type-Safety
+
+Para evitar strings hardcoded e garantir consistência entre DTO, Service, testes e Swagger:
+
+```typescript
+// modules/health/enums/health-status.enum.ts
+export enum HealthStatus {
+  OK = 'ok',
+  ERROR = 'error',
+}
+
+// Uso no Service
+return { status: HealthStatus.OK, ... };
+
+// Uso no DTO (Swagger mostra os valores corretos)
+@ApiProperty({ enum: HealthStatus, example: HealthStatus.OK })
+status: HealthStatus;
+
+// Uso no Teste
+expect(result.status).toBe(HealthStatus.OK);
+```
+
+### Frontend (`/frontend/src`)
+```
+src/
+├── assets/                        # Imagens, ícones estáticos
+├── components/
+│   ├── ui/                        #   Componentes base (Button, Input, Card)
+│   └── layout/                    #   Estruturas (Sidebar, Header)
+├── features/
+│   └── {feature}/                 # Cada funcionalidade do sistema
+│       ├── api/                   #   Hooks de data fetching (TanStack Query)
+│       │   └── use{Feature}.ts
+│       ├── components/            #   Componentes da feature
+│       │   └── {Component}.tsx
+│       ├── hooks/                 #   Hooks de lógica de UI
+│       ├── types/                 #   Tipagens da feature
+│       │   └── index.ts
+│       └── index.tsx              #   Página principal (export)
+├── hooks/                         # Hooks globais (useDebounce, useLocalStorage)
+├── lib/                           # axios, react-query, utils
+└── pages/                         # Rotas
+```
+
+##### Features Simples vs Features com Sub-funcionalidades
+
+**Feature simples** (ex: `health-check`): Estrutura plana com api/, components/, types/.
+
+**Feature complexa** (ex: `wallet`): Agrupa sub-funcionalidades em pastas internas.
+
+```
+features/wallet/
+├── core/                          # CRUD da carteira
+│   ├── api/
+│   │   └── useWallet.ts           # useGetWallet, useCreateWallet, etc.
+│   ├── components/
+│   │   └── WalletCard.tsx
+│   └── types/
+│       └── index.ts
+├── positions/                     # Sub-funcionalidade: posições
+│   ├── api/
+│   │   └── usePositions.ts
+│   ├── components/
+│   │   └── PositionsList.tsx
+│   └── types/
+│       └── index.ts
+├── transactions/                  # Sub-funcionalidade: transações
+│   ├── api/
+│   │   └── useTransactions.ts
+│   ├── components/
+│   │   └── TransactionsTable.tsx
+│   └── types/
+│       └── index.ts
+├── hooks/                         # Hooks compartilhados da feature
+├── types/                         # Types compartilhados da feature
+└── index.tsx                      # Página principal (exporta tudo)
+```
+
+**Diferença do Backend:** No React não precisa "registrar" nada. Basta criar as pastas e importar onde usar:
+
+```tsx
+// pages/WalletPage.tsx
+import { useWallet } from '@/features/wallet/core/api/useWallet';
+import { usePositions } from '@/features/wallet/positions/api/usePositions';
+import { PositionsList } from '@/features/wallet/positions/components/PositionsList';
+
+export function WalletPage() {
+  const { data: wallet } = useWallet(walletId);
+  const { data: positions } = usePositions(walletId);
+  
+  return <PositionsList positions={positions} />;
+}
+```
+
+**Exemplo: Feature Health-Check (simples)**
+```
+features/health-check/
+├── api/
+│   └── useHealthCheck.ts      # Hook de data fetching
+├── components/
+│   ├── HeroSection.tsx
+│   ├── StatusSection.tsx
+│   └── TechStackSection.tsx
+├── types/
+│   └── index.ts               # HealthResponse interface
+└── index.tsx                  # Página exportada
+```
+
+### Hooks no React: `api/` vs `hooks/`
+
+**Custom Hooks** são funções que reutilizam lógica entre componentes. No projeto, separamos em duas pastas:
+
+| Pasta | Propósito | Quando usar | Exemplo |
+|-------|-----------|-------------|---------|
+| **api/** | Data fetching | Comunicação com backend (GET, POST, etc.) | `useGetWallets()`, `useCreateClient()` |
+| **hooks/** | Lógica de UI | Estado local, filtros, modais, debounce | `useTableFilters()`, `useDebounce()` |
+
+**Onde colocar?**
+- `features/{feature}/api/` → Hook específico da feature
+- `features/{feature}/hooks/` → Hook específico da feature  
+- `src/hooks/` → Hook reutilizado em múltiplas features
+
+**Exemplo:**
+
+```tsx
+// features/wallet/api/useGetWallets.ts
+// → Busca carteiras do servidor (é basicamente um hook de busca de dados simples, por isso ficaria em api/)
+export function useGetWallets(clientId: string) {
+  return useQuery({
+    queryKey: ['wallets', clientId],
+    queryFn: () => api.get(`/clients/${clientId}/wallets`),
+  });
+}
+
+// features/wallet/hooks/useWalletFilters.ts
+// → Gerencia filtros locais (NÃO vai ao servidor). Mais complexo, é um hook de lógica de UI/estado, por isso fica em hook/
+export function useWalletFilters() {
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'balance'>('name');
+  return { search, setSearch, sortBy, setSortBy };
+}
+
+// src/hooks/useDebounce.ts
+// → Reutilizado em várias features, por isso fica fora da pasta {feature}/. Fica em hook/ por ter a mesma ideia do exemplo acima
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
+```
 
 ## Modelo de Dados (Prisma Schema)
 
@@ -261,90 +668,6 @@ model RebalanceLog {
                ┌─────────────┐            ┌───────────────┐           ┌─────────────────┐
                │    Asset    │────────────│ OptionDetail  │           │  RebalanceLog   │
                └─────────────┘            └───────────────┘           └─────────────────┘
-```
-
-## Estrutura de Pastas
-
-### Backend (`/backend/src`)
-```
-src/
-├── common/              # Decorators, Guards, Filters, Pipes
-├── config/              # Configurações de ambiente
-├── generated/           # Prisma Client (auto-gerado, ignorado no git)
-├── modules/
-│   ├── assets/          # Gestão de ativos (ações, opções)
-│   ├── optimization/    # Algoritmo da Mochila (IC)
-│   └── wallet/          # Carteiras e posições
-├── prisma.service.ts    # Singleton do Prisma Client
-├── app.module.ts
-└── main.ts
-```
-
-### Frontend (`/frontend/src`)
-```
-src/
-├── assets/              # Imagens, ícones estáticos
-├── components/
-│   ├── ui/              # Componentes base (Button, Input, Card)
-│   └── layout/          # Estruturas (Sidebar, Header)
-├── features/
-│   ├── {feature}/
-│   │   ├── api/         # Hooks de data fetching (TanStack Query)
-│   │   ├── components/  # Componentes da feature
-│   │   ├── hooks/       # Hooks de lógica de UI
-│   │   ├── types/       # Tipagens da feature
-│   │   └── index.tsx    # Página principal (export)
-│   ├── health-check/    # Verificação de status (API + DB)
-│   └── optimization/    # Otimização de carteira
-├── hooks/               # Hooks globais (useDebounce, useLocalStorage)
-├── lib/                 # axios, react-query, utils
-└── pages/               # Rotas
-```
-
-### Hooks no React: `api/` vs `hooks/`
-
-**Custom Hooks** são funções que reutilizam lógica entre componentes. No projeto, separamos em duas pastas:
-
-| Pasta | Propósito | Quando usar | Exemplo |
-|-------|-----------|-------------|---------|
-| **api/** | Data fetching | Comunicação com backend (GET, POST, etc.) | `useGetWallets()`, `useCreateClient()` |
-| **hooks/** | Lógica de UI | Estado local, filtros, modais, debounce | `useTableFilters()`, `useDebounce()` |
-
-**Onde colocar?**
-- `features/{feature}/api/` → Hook específico da feature
-- `features/{feature}/hooks/` → Hook específico da feature  
-- `src/hooks/` → Hook reutilizado em múltiplas features
-
-**Exemplo:**
-
-```tsx
-// features/wallet/api/useGetWallets.ts
-// → Busca carteiras do servidor (é basicamente um hook de busca de dados simples, por isso ficaria em api/)
-export function useGetWallets(clientId: string) {
-  return useQuery({
-    queryKey: ['wallets', clientId],
-    queryFn: () => api.get(`/clients/${clientId}/wallets`),
-  });
-}
-
-// features/wallet/hooks/useWalletFilters.ts
-// → Gerencia filtros locais (NÃO vai ao servidor). Mais complexo, é um hook de lógica de UI/estado, por isso fica em hook/
-export function useWalletFilters() {
-  const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'name' | 'balance'>('name');
-  return { search, setSearch, sortBy, setSortBy };
-}
-
-// src/hooks/useDebounce.ts
-// → Reutilizado em várias features, por isso fica fora da pasta {feature}/. Fica em hook/ por ter a mesma ideia do exemplo acima
-export function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
 ```
 
 ## Como Rodar Localmente
