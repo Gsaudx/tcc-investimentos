@@ -35,15 +35,15 @@ jobs:
     needs: build-backend
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4 # Necessário para copiar o docker-compose.yml atualizado
+    - uses: actions/checkout@v4
 
-    - name: Copy docker-compose to EC2
+    - name: Copy production files to EC2
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
-        source: "docker-compose.yml,Caddyfile"
+        source: "docker-compose.prod.yml,Caddyfile"
         target: "/home/${{ secrets.EC2_USER }}/app"
 
     - name: Deploy Backend to EC2
@@ -54,6 +54,7 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           cd /home/${{ secrets.EC2_USER }}/app
+          
           # Create .env file with secrets
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
@@ -61,12 +62,12 @@ jobs:
           echo "NODE_ENV=production" >> .env
           
           # Pull new image and restart
-          docker-compose pull
-          docker-compose up -d --remove-orphans
+          docker-compose -f docker-compose.prod.yml pull
+          docker-compose -f docker-compose.prod.yml up -d --remove-orphans
 
           # Run database migrations
           echo "Running migrations..."
-          docker-compose exec -T backend npx prisma migrate deploy
+          docker-compose -f docker-compose.prod.yml exec -T backend npx prisma migrate deploy
 
   # ------------------------------------------------------------------
   # FRONTEND: Build React App -> Upload to AWS S3

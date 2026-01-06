@@ -1,0 +1,36 @@
+services:
+  backend:
+    image: ${DOCKERHUB_USERNAME}/tcc-backend:latest
+    container_name: tcc_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+    networks:
+      - tcc_network
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: tcc_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    networks:
+      - tcc_network
+
+networks:
+  tcc_network:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
