@@ -20,7 +20,7 @@ export function useHealthCheck() {
     database:
       query.isLoading
         ? 'loading'
-        : query.data?.database === 'connected'
+        : query.data?.data?.database === 'connected'
           ? 'success'
           : 'error',
   };
