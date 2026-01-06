@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/axios';
-import type { HealthCheckResponse, HealthStatus } from '../types';
+import type { HealthApiResponseDto, HealthStatus } from '../types';
 
-async function fetchHealthCheck(): Promise<HealthCheckResponse> {
-  const { data } = await api.get<HealthCheckResponse>('/health');
+async function fetchHealthCheck(): Promise<HealthApiResponseDto> {
+  const { data } = await api.get<HealthApiResponseDto>('/health');
   return data;
 }
 

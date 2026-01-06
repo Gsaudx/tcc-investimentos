@@ -708,7 +708,33 @@ npm run start:dev      # http://localhost:3000
 ```bash
 cd frontend
 npm install
+npm run generate:types # Gera tipos do backend via OpenAPI
 npm run dev            # http://localhost:5173
+```
+
+### Geração de Tipos (OpenAPI)
+
+O frontend gera tipos automaticamente a partir do Swagger do backend:
+
+```bash
+cd frontend
+npm run generate:types  # Requer backend rodando em localhost:3000
+```
+
+Isso cria `src/types/api.d.ts` com todos os DTOs do backend.
+
+**Fluxo de trabalho:**
+1. Alterar DTO no backend (ex: adicionar campo)
+2. Rodar `npm run generate:types` no frontend
+3. Commitar `api.d.ts` junto com as mudanças do backend
+4. CI/CD usa o arquivo commitado (não precisa regenerar)
+
+```typescript
+// Uso no frontend
+import type { components } from '@/types/api';
+
+type HealthResponseDto = components['schemas']['HealthResponseDto'];
+// status: "ok" | "error"  ← Gerado automaticamente do enum do backend
 ```
 
 ### Endpoints Disponíveis

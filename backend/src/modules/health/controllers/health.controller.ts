@@ -2,7 +2,7 @@ import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiResponseDto, ApiErrorResponseDto } from '@/common/dto';
 import { HealthService } from '../services/health.service';
-import { HealthResponseDto } from '../dto';
+import { HealthResponseDto, HealthApiResponseDto } from '../dto';
 
 @ApiTags('Health')
 @Controller('health')
@@ -19,7 +19,7 @@ export class HealthController {
   @ApiResponse({
     status: 200,
     description: 'Sistema operacional',
-    type: HealthResponseDto,
+    type: HealthApiResponseDto,
   })
   @ApiResponse({
     status: 503,
