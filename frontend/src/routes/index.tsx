@@ -12,7 +12,7 @@ export function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/healthcheck" replace />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
         {/* Simple route example */}
         <Route path="/healthcheck" element={<HealthCheckPage />} />
         <Route path="/home" element={<HomePage />} />
