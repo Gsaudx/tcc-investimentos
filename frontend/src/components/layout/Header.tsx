@@ -2,7 +2,7 @@ export function Header() {
   const menuItems = [
     { name: "Home", href: "/home" },
     { name: "Sobre", href: "/home" },
-    { name: "Serviços", href: "/home" },
+    { name: "Serviços", href: "/healthcheck" },
     { name: "Contato", href: "/home" },
   ];
 
