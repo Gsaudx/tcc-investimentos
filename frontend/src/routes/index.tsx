@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HealthCheckPage } from '@/features/health-check';
+import { HomePage } from '@/features/home-page/pages/HomePage';
 //! EXAMPLE
 // import {
 //   DashboardPage,
@@ -11,9 +12,10 @@ export function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/healthcheck" replace />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
         {/* Simple route example */}
         <Route path="/healthcheck" element={<HealthCheckPage />} />
+        <Route path="/home" element={<HomePage />} />
 
         {/* Nested routes example */}
         {/* <Route path="/dashboard">
