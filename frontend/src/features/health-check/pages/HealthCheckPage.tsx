@@ -14,6 +14,5 @@ export function HealthCheckPage() {
         </div>
       </div>
     </BasePage>
-
   );
 }
