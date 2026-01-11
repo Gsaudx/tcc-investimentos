@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HealthCheckPage } from '@/features/health-check';
 import { HomePage } from '@/features/home-page/pages/HomePage';
+import LoginPage from '@/features/login-register/pages/LoginPage';
+import RegisterPage from '@/features/login-register/pages/RegisterPage';
+
 //! EXAMPLE
 // import {
 //   DashboardPage,
@@ -16,6 +19,8 @@ export function AppRoutes() {
         {/* Simple route example */}
         <Route path="/healthcheck" element={<HealthCheckPage />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         {/* Nested routes example */}
         {/* <Route path="/dashboard">
