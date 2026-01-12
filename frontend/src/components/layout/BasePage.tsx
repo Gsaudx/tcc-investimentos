@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Header } from './Header';
+import { Sidebar } from './Sidebar';
 import type { ReactNode } from 'react';
 
 interface BasePageProps {
@@ -6,10 +8,20 @@ interface BasePageProps {
 }
 
 export function BasePage({ children }: BasePageProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col bg-slate-950">
       <Header />
-      <div className="bg-slate-950 flex-1 overflow-auto">{children}</div>
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

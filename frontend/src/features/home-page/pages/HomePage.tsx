@@ -1,58 +1,91 @@
 import { BasePage } from '@/components/layout/BasePage';
-import HomeCard from '../components/HomeCard';
-import { ChartSpline, Hourglass, UsersRound } from 'lucide-react';
-import ClientsCardContent from '../components/ClientsCardContent';
-import DueDatesCardContent from '../components/DueDatesCardContent';
-import OperationsCardContent from '../components/OperationsCardContent';
+import { Users, Wallet, Clock, AlertTriangle } from 'lucide-react';
+import { StatCard } from '../components/StatCard';
+import { QuickActions } from '../components/QuickActions';
+import { WelcomeSection } from '../components/WelcomeSection';
+import { RecentActivity, type Activity } from '../components/RecentActivity';
+import {
+  UpcomingDueDates,
+  type DueDate,
+} from '../components/UpcomingDueDates';
+
+// TODO: Replace with real data from API
+const mockActivities: Activity[] = [
+  { action: 'Nova carteira criada', client: 'Cliente A', time: 'Ha 2 horas' },
+  { action: 'Otimizacao executada', client: 'Cliente B', time: 'Ha 5 horas' },
+  { action: 'Transacao registrada', client: 'Cliente C', time: 'Ontem' },
+  { action: 'Cliente cadastrado', client: 'Cliente D', time: 'Ha 2 dias' },
+];
+
+// TODO: Replace with real data from API
+const mockDueDates: DueDate[] = [
+  {
+    asset: 'PETR4 Call',
+    client: 'Cliente A',
+    date: '15/01/2026',
+    status: 'Proximo',
+  },
+  {
+    asset: 'VALE3 Put',
+    client: 'Cliente B',
+    date: '22/01/2026',
+    status: 'Em dia',
+  },
+  {
+    asset: 'ITUB4 Call',
+    client: 'Cliente C',
+    date: '30/01/2026',
+    status: 'Em dia',
+  },
+];
 
 export function HomePage() {
+  // TODO: Replace with real user data from auth context
+  const userName = 'Assessor';
+
   return (
     <BasePage>
-      <div className="h-full text-white flex flex-col p-4 sm:p-6 lg:p-8">
-        {/* Welcome Section */}
-        <div className="text-center mt-6 sm:mt-10 lg:mt-14 mb-6 sm:mb-8">
-          <p className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            Ola USUARIO, bem-vindo de volta!
-          </p>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent mt-2 sm:mt-4">
-            {new Date().toLocaleDateString('pt-BR', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
-        </div>
+      <div className="space-y-6">
+        <WelcomeSection userName={userName} />
 
-        {/* Cards Grid - Main Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          <HomeCard
-            title="Clientes"
-            icon={
-              <UsersRound className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" />
-            }
-            content={<ClientsCardContent />}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            label="Total de Clientes"
+            value={42}
+            icon={Users}
+            trend={{ value: 12, isPositive: true }}
+            accentColor="blue"
           />
-          <HomeCard
-            title="Operacoes"
-            icon={
-              <ChartSpline className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" />
-            }
-            content={<OperationsCardContent />}
+          <StatCard
+            label="Valor em Carteiras"
+            value="R$ 2.4M"
+            icon={Wallet}
+            trend={{ value: 8, isPositive: true }}
+            accentColor="emerald"
           />
-          <HomeCard
-            title="Vencimentos"
-            icon={<Hourglass className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" />}
-            content={<DueDatesCardContent />}
+          <StatCard
+            label="Operacoes Pendentes"
+            value={7}
+            icon={Clock}
+            accentColor="amber"
+          />
+          <StatCard
+            label="Opcoes a Vencer"
+            value={15}
+            icon={AlertTriangle}
+            trend={{ value: 3, isPositive: false }}
+            accentColor="rose"
           />
         </div>
 
-        {/* Cards Grid - Secondary */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-6">
-          <HomeCard title="Card 1" content={<p>Conteudo do Card 1</p>} />
-          <HomeCard title="Card 2" content={<p>Conteudo do Card 2</p>} />
-          <HomeCard title="Card 3" content={<p>Conteudo do Card 3</p>} />
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <RecentActivity activities={mockActivities} />
+          <QuickActions />
         </div>
+
+        <UpcomingDueDates dueDates={mockDueDates} />
       </div>
     </BasePage>
   );
