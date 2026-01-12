@@ -517,6 +517,83 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 ```
 
+### Componentes de UX
+
+O projeto utiliza componentes e utilitários para melhorar a experiência do usuário.
+
+#### Loading Components (`components/ui/`)
+
+| Componente       | Propósito                                           | Props                    |
+| ---------------- | --------------------------------------------------- | ------------------------ |
+| `LoadingSpinner` | Spinner animado para indicar carregamento           | `size?: 'sm' \| 'md' \| 'lg'` |
+| `LoadingScreen`  | Tela cheia de loading com logo e mensagem           | `message?: string`       |
+
+```tsx
+// Uso do LoadingSpinner
+<LoadingSpinner size="sm" />  // Em botões
+<LoadingSpinner size="lg" />  // Standalone
+
+// Uso do LoadingScreen
+<LoadingScreen message="Verificando sessao..." />
+```
+
+#### ButtonSubmit com Loading
+
+O componente `ButtonSubmit` suporta estado de loading:
+
+```tsx
+<ButtonSubmit loading={isLoading} full={true}>
+  {isLoading ? 'Enviando...' : 'Enviar'}
+</ButtonSubmit>
+```
+
+#### Animações Tailwind
+
+Animações customizadas disponíveis via classes Tailwind:
+
+| Classe            | Efeito                                      | Uso                          |
+| ----------------- | ------------------------------------------- | ---------------------------- |
+| `animate-fade-in` | Fade in com slide up sutil (0.3s)           | Cards, páginas               |
+| `animate-shake`   | Tremida horizontal (0.5s)                   | Mensagens de erro            |
+| `animate-slide-up`| Slide up mais pronunciado (0.3s)            | Modais, toasts               |
+
+```tsx
+// Exemplo: Card com fade-in
+<div className="animate-fade-in">...</div>
+
+// Exemplo: Erro com shake
+{error && <div className="animate-shake text-rose-400">{error}</div>}
+```
+
+#### Padrão de Loading em Formulários
+
+Para formulários com submissão assíncrona:
+
+```tsx
+const [isLoading, setIsLoading] = useState(false);
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
+  try {
+    await submitData();
+  } catch {
+    setError('Erro ao enviar');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+return (
+  <form onSubmit={handleSubmit}>
+    <fieldset disabled={isLoading}>  {/* Desabilita todos os inputs */}
+      <Input ... />
+      <ButtonSubmit loading={isLoading}>Enviar</ButtonSubmit>
+    </fieldset>
+  </form>
+);
+```
+
 ## Modelo de Dados (Prisma Schema)
 
 ### Enums

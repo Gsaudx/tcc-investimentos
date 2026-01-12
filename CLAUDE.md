@@ -123,6 +123,16 @@ Run `npm run generate:types` in frontend after backend schema changes.
 - Frontend axios config: `withCredentials: true` to send cookies with requests
 - Environment: `JWT_SECRET` (required), `JWT_EXPIRES_IN` (default: "12h"), `COOKIE_SECURE`, `COOKIE_DOMAIN`
 
+## UX Components
+
+- `LoadingSpinner`: Animated spinner with size variants (sm, md, lg)
+- `LoadingScreen`: Full-page loading with logo and message
+- `ButtonSubmit`: Supports `loading` prop for async submissions
+- Custom Tailwind animations: `animate-fade-in`, `animate-shake`, `animate-slide-up`
+- Form loading pattern: use `<fieldset disabled={isLoading}>` to disable all inputs during submission
+- AuthProvider shows LoadingScreen during initial auth check (prevents flicker)
+- BasePage content uses `animate-fade-in` for smooth page transitions
+
 ## CI/CD
 
 Quality checks run on PRs to main/master:
