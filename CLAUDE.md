@@ -124,3 +124,4 @@ Quality checks run on PRs to main/master:
 5. **Commits**: Always semantic commits in english. Example - feat(backend): Add wallet/ endpoint to list wallets. Do not add other people/claude as co-authors. Let only myself as the author of the changes.
 6. **Documentation**: After we commit a change, read the whole README.md file and update the respective sections, if needed with the new information (if we change some architecture decision, include folders, etc). After that, do the same thing in the CLAUDE.md file.
 7. **Extra Instructions**: Always follow the standard used in the files already written, if we have a bad implementation, security issue or related, relate it to me so we can discuss a change in the implementation.
+8. **General Development Rules**: Always try to develop the most maintainable, scalable, simple and efficient code as possible based on the market standards. 
