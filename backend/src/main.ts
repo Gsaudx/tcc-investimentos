@@ -10,21 +10,21 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
-  // 1. Configuração de CORS (Segurança)
-  // Em produção, substitua '*' pela URL do CloudFront
+  // 1. CORS Configuration (Security)
+  // In production, replace '*' with CloudFront URL
   app.enableCors({
     origin: process.env.CORS_ORIGIN || '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
-  // 2. Filtro de Exceções Global (Padroniza respostas de erro)
+  // 2. Global Exception Filter (Standardizes error responses)
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  // 3. Validacao Global com Zod
+  // 3. Global Zod Validation
   app.useGlobalPipes(new ZodValidationPipe());
 
-  // 4. Swagger (Documentação Viva) - Apenas em Desenvolvimento
+  // 4. Swagger (API Documentation) - Development only
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('TCC Investimentos API')
