@@ -4,10 +4,7 @@ import { StatCard } from '../components/StatCard';
 import { QuickActions } from '../components/QuickActions';
 import { WelcomeSection } from '../components/WelcomeSection';
 import { RecentActivity, type Activity } from '../components/RecentActivity';
-import {
-  UpcomingDueDates,
-  type DueDate,
-} from '../components/UpcomingDueDates';
+import { UpcomingDueDates, type DueDate } from '../components/UpcomingDueDates';
 
 // TODO: Replace with real data from API
 const mockActivities: Activity[] = [
