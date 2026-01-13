@@ -686,7 +686,7 @@ model Client {
   cpf             String
   phone           String?
   riskProfile     RiskProfile  @default(MODERATE)
-  inviteToken     String?      @unique  // Token de convite (TCC-XXXXXXXX)
+  inviteToken     String?      @unique  // Token de convite (INV-XXXXXXXX)
   inviteStatus    InviteStatus @default(PENDING)  // Status do convite
   inviteExpiresAt DateTime?    // Expiracao do token
   createdAt       DateTime     @default(now())
@@ -1124,7 +1124,7 @@ O sistema suporta um modelo "Hybrid Client" onde clientes podem vincular suas co
 
 ### Formato do Token
 
-- **Padrão:** `TCC-XXXXXXXX` (8 caracteres alfanuméricos)
+- **Padrão:** `INV-XXXXXXXX` (8 caracteres alfanuméricos)
 - **Caracteres:** `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (sem caracteres ambíguos como 0/O, 1/I/L)
 - **Expiração:** 7 dias após geração
 - **Uso único:** Token é invalidado após aceitação
