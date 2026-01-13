@@ -38,6 +38,7 @@ export default function InputPhone({
         disabled={disabled}
         required={required}
         className="phone-input-custom"
+        limitMaxLength={true}
       />
       <style>{`
         .phone-input-custom {

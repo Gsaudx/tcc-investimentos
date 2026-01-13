@@ -21,11 +21,6 @@ export default function InputCpfCnpj({
 }: InputCpfCnpjProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const getMask = useCallback((value: string) => {
-    const digits = value.replace(/\D/g, '');
-    return digits.length > 11 ? CNPJ_MASK : CPF_MASK;
-  }, []);
-
   const handleAccept = useCallback(
     (unmaskedValue: string) => {
       onChange?.(unmaskedValue);
@@ -42,7 +37,10 @@ export default function InputCpfCnpj({
         CPF/CNPJ
       </label>
       <IMaskInput
-        mask={getMask(value)}
+        mask={[
+          { mask: CPF_MASK },
+          { mask: CNPJ_MASK }
+        ]}
         unmask={true}
         value={value}
         onAccept={handleAccept}
