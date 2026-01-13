@@ -9,6 +9,7 @@ import Select from "@/components/ui/Select.tsx";
 import StatsCardClient from "../components/StatsCardClient.tsx";
 import ModalBase from "@/components/layout/ModalBase.tsx";
 import ModalClient from "../components/ModalClient.tsx";
+import NewClientModal from "../components/NewClientModal.tsx";
 
 // Mock data - replace with API call
 const mockClients: Client[] = [
@@ -85,59 +86,65 @@ export default function ClientsPage() {
 
     return (
         <BasePage title="Clientes">
-            <ModalClient 
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                selectedClient={selectedClient}
-                size="xxl"
+            <ModalClient
+            isOpen={isModalOpen && selectedClient !== null}
+            onClose={handleCloseModal}
+            selectedClient={selectedClient}
+            size="xxl"
+            />
+            <NewClientModal 
+            isOpen={isModalOpen && selectedClient === null}
+            onClose={handleCloseModal}
+            size="xxl" 
             />
             <div className="space-y-6">
-                {/* Stats Cards */}
-                <StatsCardClient />
+            {/* Stats Cards */}
+            <StatsCardClient />
 
-                {/* Search and Filter Bar */}
-                <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div className="relative flex-1 w-full md:max-w-md">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Buscar cliente por nome ou email..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#3a3a3a]"
-                        />
-                    </div>
-                    <div className="flex gap-3 w-full md:w-auto">
-                        <Select
-                            value={filterStatus}
-                            options={optionsSelect}
-                            onChange={(e) => setFilterStatus(e.target.value as "all" | "Ativo" | "Inativo")}
-                        />
-                        <ButtonSubmit
-                            icon={<Plus className="w-5 h-5" />}
-                            className="!mt-0 !w-auto h-11"
-                            children="Novo Cliente"
-                        />
-                    </div>
+            {/* Search and Filter Bar */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="relative flex-1 w-full md:max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                    type="text"
+                    placeholder="Buscar cliente por nome ou email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#3a3a3a]"
+                />
                 </div>
-
-                {/* Clients Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredClients.map((client) => (
-                        <ClientCard
-                            key={client.id}
-                            client={client}
-                            onClick={() => handleOpenModal(client)}
-                        />
-                    ))}
+                <div className="flex gap-3 w-full md:w-auto">
+                <Select
+                    value={filterStatus}
+                    options={optionsSelect}
+                    onChange={(e) => setFilterStatus(e.target.value as "all" | "Ativo" | "Inativo")}
+                />
+                <ButtonSubmit
+                    icon={<Plus className="w-5 h-5" />}
+                    className="!mt-0 !w-auto h-11"
+                    children="Novo Cliente"
+                    onClick={() => setIsModalOpen(true)}
+                />
                 </div>
+            </div>
 
-                {filteredClients.length === 0 && (
-                    <div className="text-center py-12">
-                        <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                        <p className="text-gray-400">Nenhum cliente encontrado</p>
-                    </div>
-                )}
+            {/* Clients Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredClients.map((client) => (
+                <ClientCard
+                    key={client.id}
+                    client={client}
+                    onClick={() => handleOpenModal(client)}
+                />
+                ))}
+            </div>
+
+            {filteredClients.length === 0 && (
+                <div className="text-center py-12">
+                <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">Nenhum cliente encontrado</p>
+                </div>
+            )}
             </div>
         </BasePage>
     );
