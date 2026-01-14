@@ -38,7 +38,6 @@ export function useNewClientModal() {
         e.preventDefault();
 
         const email = validateEmail(formData.email);
-        console.log(email);
     };
 
     return {

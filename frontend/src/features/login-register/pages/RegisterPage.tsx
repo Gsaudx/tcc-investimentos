@@ -5,9 +5,9 @@ import InputEmail from '@/components/ui/InputEmail';
 import InputName from '@/components/ui/InputName';
 import InputPassword from '@/components/ui/InputPassword';
 import InputCpfCnpj from '@/components/ui/InputCpfCnpj';
-import InputPhone from '@/components/ui/InputPhone';
 import RoleToggle from '@/components/ui/RoleToggle';
 import { useAuth } from '@/features/auth';
+import InputPhoneFormated from '../components/InputPhoneFormated';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -107,7 +107,7 @@ export default function RegisterPage() {
                   onChange={setCpfCnpj}
                   disabled={isLoading}
                 />
-                <InputPhone
+                <InputPhoneFormated
                   value={phone}
                   onChange={(value) => setPhone(value || '')}
                   disabled={isLoading}
