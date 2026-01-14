@@ -1,4 +1,3 @@
-import { BasePage } from '@/components/layout/BasePage';
 import { Users, Wallet, Clock, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/features/auth';
 import { StatCard } from '../components/advisor/StatCard';
@@ -48,49 +47,47 @@ export function HomePageAdvisor() {
   const userName = user?.name ?? 'Assessor';
 
   return (
-    <BasePage>
-      <div className="space-y-6">
-        <WelcomeSection userName={userName} />
+    <div className="space-y-6">
+      <WelcomeSection userName={userName} />
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label="Total de Clientes"
-            value={42}
-            icon={Users}
-            trend={{ value: 12, isPositive: true }}
-            accentColor="blue"
-          />
-          <StatCard
-            label="Valor em Carteiras"
-            value="R$ 2.4M"
-            icon={Wallet}
-            trend={{ value: 8, isPositive: true }}
-            accentColor="emerald"
-          />
-          <StatCard
-            label="Operacoes Pendentes"
-            value={7}
-            icon={Clock}
-            accentColor="amber"
-          />
-          <StatCard
-            label="Opcoes a Vencer"
-            value={15}
-            icon={AlertTriangle}
-            trend={{ value: 3, isPositive: false }}
-            accentColor="rose"
-          />
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <RecentActivity activities={mockActivities} />
-          <QuickActions />
-        </div>
-
-        <UpcomingDueDates dueDates={mockDueDates} />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          label="Total de Clientes"
+          value={42}
+          icon={Users}
+          trend={{ value: 12, isPositive: true }}
+          accentColor="blue"
+        />
+        <StatCard
+          label="Valor em Carteiras"
+          value="R$ 2.4M"
+          icon={Wallet}
+          trend={{ value: 8, isPositive: true }}
+          accentColor="emerald"
+        />
+        <StatCard
+          label="Operacoes Pendentes"
+          value={7}
+          icon={Clock}
+          accentColor="amber"
+        />
+        <StatCard
+          label="Opcoes a Vencer"
+          value={15}
+          icon={AlertTriangle}
+          trend={{ value: 3, isPositive: false }}
+          accentColor="rose"
+        />
       </div>
-    </BasePage>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <RecentActivity activities={mockActivities} />
+        <QuickActions />
+      </div>
+
+      <UpcomingDueDates dueDates={mockDueDates} />
+    </div>
   );
 }
