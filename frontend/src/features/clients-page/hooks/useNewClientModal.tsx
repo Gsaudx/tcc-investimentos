@@ -3,7 +3,6 @@ import { type ClientFormData } from "../types/client";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { getFormErrors } from "@/lib/utils";
 
-
 const initialFormData: ClientFormData = {
     name: "",
     email: "",
@@ -92,16 +91,13 @@ export function useNewClientModal() {
             }
         ];
 
-        // 2. Chama a função utilitária
         const errorList = getFormErrors(validations);
 
-        // 3. Se houver erros, atualiza o estado e para a execução
         if (errorList) {
             setErrors(errorList);
             return;
         }
 
-        // 4. Se chegou aqui, está tudo certo!
         setErrors({}); // Limpa erros anteriores
     };
 
@@ -110,7 +106,9 @@ export function useNewClientModal() {
         errors,
         handleChange,
         handlePhoneChange,
-        handleSubmit
+        handleSubmit,
+        setFormData,
+        setErrors
     };
 }
 

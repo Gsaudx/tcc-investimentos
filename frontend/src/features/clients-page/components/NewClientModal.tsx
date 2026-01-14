@@ -14,10 +14,22 @@ interface ModalClientProps {
 }
 
 export default function NewClientModal({ isOpen, onClose, title, size }: ModalClientProps) {
-    const { formData, errors, handleChange, handlePhoneChange, handleSubmit } = useNewClientModal();
+    const { formData, errors, handleChange, handlePhoneChange, handleSubmit, setFormData, setErrors } = useNewClientModal();
 
     const handleClose = () => {
         onClose();
+    };
+
+    const handleClear = () => {
+        setFormData({
+            name: "",
+            email: "",
+            phone: "",
+            cpf: ""
+        });
+        if (typeof setErrors === "function") {
+            setErrors({});
+        }
     };
 
     return (
@@ -31,7 +43,10 @@ export default function NewClientModal({ isOpen, onClose, title, size }: ModalCl
                     <h2 className="text-xl font-semibold text-white">Novo Cliente</h2>
                 </div>
                 <button
-                    onClick={handleClose}
+                    onClick={() => {
+                        handleClear();
+                        handleClose()
+                    }}
                     className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-slate-800 rounded-lg"
                 >
                     <X size={20} />
@@ -90,10 +105,10 @@ export default function NewClientModal({ isOpen, onClose, title, size }: ModalCl
                 <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-800">
                     <button
                         type="button"
-                        onClick={handleClose}
+                        onClick={handleClear}
                         className="px-5 py-2.5 border border-slate-700 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white transition-colors font-medium"
                     >
-                        Cancelar
+                        Limpar Campos
                     </button>
                     <button
                         type="submit"
