@@ -119,7 +119,7 @@ Run `npm run generate:types` in frontend after backend schema changes.
 - Endpoints: `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
 - Guards: `JwtAuthGuard` (protects routes), `RolesGuard` (RBAC)
 - Decorators: `@Roles()` (set required roles), `@CurrentUser()` (inject authenticated user)
-- Frontend auth feature: `features/auth/` with AuthProvider, useAuth hook, ProtectedRoute
+- Frontend auth feature: `features/auth/` with AuthProvider, useAuth hook
 - Frontend axios config: `withCredentials: true` to send cookies with requests
 - Environment: `JWT_SECRET` (required), `JWT_EXPIRES_IN` (default: "12h"), `COOKIE_SECURE`, `COOKIE_DOMAIN`
 
@@ -136,14 +136,14 @@ Registration supports role selection and additional fields:
 
 Two separate areas based on user role:
 
-- **Advisor area** (`features/advisor/`): Access for investment advisors
+- **Advisor area** (`features/home/`): Access for investment advisors
   - Route: `/advisor/home`
   - Access: ADVISOR, ADMIN roles
-- **Client area** (`features/client/`): Client experience
+- **Client area** (`features/home/`): Client experience
   - Route: `/client/home`
   - Access: CLIENT role
   - Shows invite prompt if `clientProfileId` is null
-- `ProtectedRoute` component handles role checking and redirects
+- `ProtectedLayout` component (layout route) handles authentication, role checking and provides persistent layout
 
 ## Client Invite System (Hybrid Client)
 
@@ -172,7 +172,6 @@ Allows clients to link their user accounts to existing client profiles via secur
 - Custom Tailwind animations: `animate-fade-in`, `animate-shake`, `animate-slide-up`
 - Form loading pattern: use `<fieldset disabled={isLoading}>` to disable all inputs during submission
 - AuthProvider shows LoadingScreen during initial auth check (prevents flicker)
-- BasePage content uses `animate-fade-in` for smooth page transitions
 
 ## CI/CD
 
