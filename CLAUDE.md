@@ -6,6 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TCC Investimentos is a B2B SaaS platform for investment advisors. It provides portfolio management and investment optimization using the Knapsack algorithm (part of an academic research project).
 
+## Quick Reference
+
+For detailed documentation, see the `docs/` folder:
+
+- [Architecture](docs/ARCHITECTURE.md) - Backend and frontend structure
+- [Database](docs/DATABASE.md) - Schema and relationships
+- [Authentication](docs/AUTHENTICATION.md) - Auth flow and invite system
+- [Development](docs/DEVELOPMENT.md) - How to add features and conventions
+
 ## Common Commands
 
 ### Backend (from `/backend`)
@@ -37,32 +46,20 @@ npm run generate:types       # Generate TypeScript types from backend OpenAPI (r
 npx prettier --write "**/*.{js,jsx,ts,tsx,json,css,md}"
 ```
 
-## Architecture
+## Architecture Summary
 
 ### Backend: Domain-Based Modular Monolith (NestJS)
 
-- **Not** traditional layered architecture (Controller/Service/Repo at root)
 - Organized by **business domain** in `modules/`
-- Path alias: `@/` maps to `src/` (e.g., `@/shared/prisma`)
-
-**Module Structure:**
-
-- Simple modules: flat structure with `controllers/`, `services/`, `schemas/`, `__tests__/`
-- Complex modules (like `wallet`): sub-functionality folders (e.g., `core/`, `positions/`, `transactions/`)
+- Path alias: `@/` maps to `src/`
+- Validation with Zod 4 + `nestjs-zod` for DTOs
 
 **Key Folders:**
 
-- `modules/` - Business domains (each is self-contained)
-- `common/` - Shared utilities: decorators, schemas, filters, guards, utils
+- `modules/` - Business domains: `auth/`, `clients/`, `health/`
+- `common/` - Shared: decorators, schemas, filters, guards
 - `shared/` - Global services (`@Global()`) like PrismaService
-- `config/` - Environment configuration
-
-**Validation with Zod:**
-
-- Schemas defined in `schemas/` folders using Zod 4
-- Use `createZodDto()` from `nestjs-zod` to create DTO classes for Swagger
-- Types inferred with `z.infer<typeof Schema>`
-- Enums: use `z.nativeEnum(MyEnum)`
+- `config/` - Environment configuration with Zod validation
 
 ### Frontend: Feature-Based (React + Vite)
 
@@ -72,14 +69,9 @@ npx prettier --write "**/*.{js,jsx,ts,tsx,json,css,md}"
 **Key Folders:**
 
 - `features/{feature}/` - Self-contained features with `pages/`, `api/`, `components/`, `hooks/`, `types/`
+- `components/layout/` - Layout components: `Header`, `Sidebar`, `ProtectedLayout`, `ModalBase`
 - `components/ui/` - Reusable UI components (design system)
-- `hooks/` - Global hooks shared across features
-- `lib/` - axios config, react-query setup, utilities
-
-**Hooks Convention:**
-
-- `api/` folder: data fetching hooks (TanStack Query)
-- `hooks/` folder: UI logic hooks (local state, filters, modals)
+- `lib/` - axios config, react-query setup
 
 ### API Response Pattern
 
@@ -88,90 +80,76 @@ All endpoints return standardized responses:
 - Success: `{ success: true, data: {...}, message?: string }`
 - Error: `{ success: false, statusCode, message, errors?, timestamp, path }`
 
-The `HttpExceptionFilter` automatically formats errors. Services return pure data; controllers wrap with `ApiResponseDto.success()`.
-
-### Type Generation
-
-Frontend types are auto-generated from backend Swagger:
-
-```typescript
-import type { components } from "@/types/api";
-type HealthResponseDto = components["schemas"]["HealthResponseDto"];
-```
-
-Run `npm run generate:types` in frontend after backend schema changes.
-
 ## Database
 
 - PostgreSQL 16 with Prisma ORM 7.x (Driver Adapters)
 - Schema in `backend/prisma/schema.prisma`
-- Multi-tenant model: User (Advisor role) → Clients → Wallets → Positions/Transactions
-- `Position.averagePrice` = acquisition price (not market price)
+- Multi-tenant model: User (Advisor) → Clients → Wallets → Positions/Transactions
 - User roles: `UserRole` enum with ADVISOR, CLIENT, ADMIN
 
 ## Authentication
 
-- JWT-based stateless authentication via `@nestjs/passport`
-- **HttpOnly cookies** for token storage (more secure than localStorage - protects against XSS)
-- Cookie settings: `httpOnly: true`, `sameSite: 'strict'`, `secure: true` (production)
-- Token expiration: 12 hours (configurable via `JWT_EXPIRES_IN`)
-- Backend auth module: `modules/auth/` with strategies (local, jwt), service, controller
+- JWT-based with **HttpOnly cookies** (protects against XSS)
+- Backend: `modules/auth/` with strategies (local, jwt), service, controller
+- Frontend: `features/auth/` with AuthProvider, useAuth hook
 - Endpoints: `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`
-- Guards: `JwtAuthGuard` (protects routes), `RolesGuard` (RBAC)
-- Decorators: `@Roles()` (set required roles), `@CurrentUser()` (inject authenticated user)
-- Frontend auth feature: `features/auth/` with AuthProvider, useAuth hook
-- Frontend axios config: `withCredentials: true` to send cookies with requests
-- Environment: `JWT_SECRET` (required), `JWT_EXPIRES_IN` (default: "12h"), `COOKIE_SECURE`, `COOKIE_DOMAIN`
-
-## Multi-Role Registration
-
-Registration supports role selection and additional fields:
-
-- Backend register schema: `modules/auth/schemas/register.schema.ts`
-- Fields: `role` (ADVISOR/CLIENT), `cpfCnpj` (11/14 digits), `phone` (E.164 format)
-- UserProfile includes: `cpfCnpj`, `phone`, `clientProfileId` (null if not linked)
-- Role-based redirects after login/register
+- Guards: `JwtAuthGuard`, `RolesGuard`
+- Decorators: `@Roles()`, `@CurrentUser()`
 
 ## Role-Based Routing (Frontend)
 
-Two separate areas based on user role:
+Uses React Router layout routes for persistent navigation:
 
-- **Advisor area** (`features/home/`): Access for investment advisors
-  - Route: `/advisor/home`
-  - Access: ADVISOR, ADMIN roles
-- **Client area** (`features/home/`): Client experience
-  - Route: `/client/home`
-  - Access: CLIENT role
-  - Shows invite prompt if `clientProfileId` is null
-- `ProtectedLayout` component (layout route) handles authentication, role checking and provides persistent layout
+- **`ProtectedLayout`** (`components/layout/ProtectedLayout.tsx`): Handles auth check, role validation, and provides persistent Header/Sidebar
+- Layout stays mounted during navigation (prevents blink)
+- Routes are grouped by allowed roles in `routes/index.tsx`
 
-## Client Invite System (Hybrid Client)
+**Routes:**
 
-Allows clients to link their user accounts to existing client profiles via secure invite tokens.
+| Route          | Access         | Description         |
+| -------------- | -------------- | ------------------- |
+| `/advisor/home`| ADVISOR, ADMIN | Advisor dashboard   |
+| `/clients`     | ADVISOR, ADMIN | Client management   |
+| `/client/home` | CLIENT         | Client dashboard    |
+| `/login`       | Public         | Login page          |
+| `/register`    | Public         | Registration page   |
+| `/healthcheck` | Public         | Health check page   |
 
-- Backend module: `modules/clients/` with invite service and controller
-- Token format: `INV-XXXXXXXX` (8 alphanumeric chars, cryptographically secure)
-- Token expiration: 7 days (configurable in service)
-- Endpoints:
-  - `POST /clients/:id/invite` - Generate invite (ADVISOR only)
-  - `GET /clients/:id/invite` - Get invite status (ADVISOR only)
-  - `DELETE /clients/:id/invite` - Revoke invite (ADVISOR only)
-  - `POST /clients/invite/accept` - Accept invite (any authenticated user)
-- InviteStatus enum: `PENDING`, `SENT`, `ACCEPTED`, `REJECTED`
-- Database fields on Client: `userId`, `inviteToken`, `inviteStatus`, `inviteExpiresAt`
-- Frontend: `InviteTokenPrompt` component in `features/client/components/`
+## Client Invite System
 
-## UX Components
+Allows clients to link their user accounts via secure invite tokens.
 
-- `LoadingSpinner`: Animated spinner with size variants (sm, md, lg)
-- `LoadingScreen`: Full-page loading with logo and message
-- `ButtonSubmit`: Supports `loading` prop for async submissions
-- `RoleToggle`: Toggle switch for selecting ADVISOR/CLIENT role
-- `InputCpfCnpj`: Auto-masking CPF (000.000.000-00) / CNPJ (00.000.000/0000-00) input using react-imask
-- `InputPhone`: International phone input with country selector using react-phone-number-input
-- Custom Tailwind animations: `animate-fade-in`, `animate-shake`, `animate-slide-up`
-- Form loading pattern: use `<fieldset disabled={isLoading}>` to disable all inputs during submission
-- AuthProvider shows LoadingScreen during initial auth check (prevents flicker)
+- Backend: `modules/clients/` with invite service and controller
+- Token format: `INV-XXXXXXXX` (8 alphanumeric chars)
+- Token expiration: 7 days
+- Frontend: `InviteTokenPrompt` component in `features/home/components/client/`
+
+## UI Components
+
+**Layout (`components/layout/`):**
+
+- `ProtectedLayout`: Auth wrapper with Header/Sidebar (uses React Router Outlet)
+- `Header`: Navigation header with search and user menu
+- `Sidebar`: Collapsible navigation sidebar
+- `ModalBase`: Base modal component
+- `PageTitle`: Page title component
+
+**UI (`components/ui/`):**
+
+- `LoadingSpinner`: Animated spinner (sm, md, lg)
+- `LoadingScreen`: Full-page loading overlay
+- `ButtonSubmit`: Button with loading state
+- `Input`, `InputEmail`, `InputPassword`, `InputName`: Form inputs
+- `InputPhone`: International phone input with country selector
+- `InputCpfCnpj`: Auto-masking CPF/CNPJ input
+- `RoleToggle`: ADVISOR/CLIENT toggle switch
+- `Select`: Dropdown select
+
+**Custom Tailwind Animations:**
+
+- `animate-fade-in`: Fade in with slide (0.3s)
+- `animate-shake`: Horizontal shake (0.5s)
+- `animate-slide-up`: Slide up (0.3s)
 
 ## CI/CD
 
@@ -185,8 +163,8 @@ Quality checks run on PRs to main/master:
 1. **Zero Over-engineering**: Keep it simple
 2. **Strict Typing**: No `any`. Frontend interfaces mirror backend DTOs.
 3. **Conventional Commits**: `feat`, `fix`, `chore`, etc.
-4. **Human Language and comments**: Code is in english. Comments only when strictly necessary, and also in english. Every text in U.I in brazilian portuguese.
-5. **Commits**: Let's work always with atomic commits. When we finish a whole iteration (working properly) we should commit the changes to the repository. Always semantic commits in english. Example - feat(backend): Add wallet/ endpoint to list wallets. Do not add other people/claude as co-authors. Let only myself as the author of the changes.
-6. **Documentation**: After we commit a change, read the whole README.md file and update the respective sections, if needed with the new information (if we change some architecture decision, include folders, etc). After that, do the same thing in the CLAUDE.md file.
-7. **Extra Instructions**: Always follow the standard used in the files already written, if we have a bad implementation, security issue or related, relate it to me so we can discuss a change in the implementation.
-8. **General Development Rules**: We should always develop the most maintainable, secure, scalable, simple and efficient code as possible based on the market standards.
+4. **Language**: Code in English. Comments only when necessary, in English. UI text in Brazilian Portuguese.
+5. **Atomic Commits**: Commit after each working iteration. Semantic commits in English. Do not add co-authors.
+6. **Documentation**: After committing, update docs if architecture/structure changed.
+7. **Standards**: Follow existing patterns. Report security issues or bad implementations for discussion.
+8. **Quality**: Maintainable, secure, scalable, simple, and efficient code.
