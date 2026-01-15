@@ -4,6 +4,7 @@ import InputEmail from '@/components/ui/InputEmail';
 import InputName from '@/components/ui/InputName';
 import InputPhone from '@/components/ui/InputPhone';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import type { AxiosError } from 'axios';
 import { User, X } from 'lucide-react';
 import { useNewClientModal } from '../hooks/useNewClientModal';
 import { useCreateClient } from '../api';
@@ -15,6 +16,26 @@ interface NewClientModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
 }
 
+type ApiErrorResponse = {
+  message?: string;
+  errors?: string[];
+};
+
+function getApiErrorMessage(error: unknown): string {
+  const axiosError = error as AxiosError<ApiErrorResponse> | undefined;
+  const responseData = axiosError?.response?.data;
+
+  if (responseData?.message) {
+    return responseData.message;
+  }
+
+  if (responseData?.errors?.length) {
+    return responseData.errors[0] ?? 'Erro ao cadastrar cliente.';
+  }
+
+  return 'Erro ao cadastrar cliente. Tente novamente.';
+}
+
 export default function NewClientModal({
   isOpen,
   onClose,
@@ -22,6 +43,9 @@ export default function NewClientModal({
   size,
 }: NewClientModalProps) {
   const createClientMutation = useCreateClient();
+  const apiErrorMessage = createClientMutation.isError
+    ? getApiErrorMessage(createClientMutation.error)
+    : null;
 
   const {
     formData,
@@ -78,11 +102,7 @@ export default function NewClientModal({
         {/* API Error */}
         {createClientMutation.isError && (
           <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg mb-2">
-            <p className="text-red-400 text-sm">
-              {createClientMutation.error instanceof Error
-                ? createClientMutation.error.message
-                : 'Erro ao cadastrar cliente. Tente novamente.'}
-            </p>
+            <p className="text-red-400 text-sm">{apiErrorMessage}</p>
           </div>
         )}
 
