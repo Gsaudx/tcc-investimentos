@@ -35,7 +35,11 @@ export default function ModalClient({
     return name?.charAt(0).toUpperCase() || '?';
   };
 
-  // Fecha o dropdown ao clicar fora
+  const handleClose = () => {
+    setIsDropdownOpen(false);
+    onClose();
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -46,21 +50,16 @@ export default function ModalClient({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Fecha o dropdown quando o modal fecha
-  useEffect(() => {
-    if (!isOpen) {
-      setIsDropdownOpen(false);
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
     }
-  }, [isOpen]);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
 
   return (
     <ModalBase
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title={title}
       size={size}
       backgroundColor="bg-white"
@@ -75,7 +74,7 @@ export default function ModalClient({
           </button>
           <button
             className="text-white hover:text-gray-200 bg-black/20 rounded-full p-2 backdrop-blur-sm"
-            onClick={onClose}
+            onClick={handleClose}
           >
             <X size={20} />
           </button>
@@ -99,24 +98,22 @@ export default function ModalClient({
         )}
       </div>
 
-      {/* Banner Superior - 75% da altura */}
       <div className="bg-gray-600 h-60 relative border-l border-r border-t border-gray-700 rounded-t-xl"></div>
 
-      {/* Foto de perfil sobreposta */}
       <div className="flex flex-col items-center -mt-[190px] relative z-10 px-6 ">
-        {selectedClient?.profilePhoto ? (
-          <img
-            src={selectedClient.profilePhoto}
-            alt={selectedClient?.name || 'Cliente'}
-            className="w-64 h-64 rounded-xl object-cover shadow-2xl ring-8 ring-white"
-          />
-        ) : (
+          {/* {selectedClient?.profilePhoto ? (
+            <img
+              src={selectedClient.profilePhoto}
+              alt={selectedClient?.name || 'Cliente'}
+              className="w-64 h-64 rounded-xl object-cover shadow-2xl ring-8 ring-white"
+            />
+          ) : ( */}
           <div className="w-64 h-64 rounded-xl bg-blue-500 flex items-center justify-center shadow-2xl ring-2 ring-white">
             <span className="text-6xl font-bold text-white">
               {getInitial(selectedClient?.name)}
             </span>
           </div>
-        )}
+        {/* )} */}
 
         <div className="p-6 w-full flex flex-col items-start">
           <h2 className="text-4xl font-bold text-black mt-4">
@@ -128,9 +125,7 @@ export default function ModalClient({
         </div>
       </div>
 
-      {/* Área de conteúdo - 25% */}
       <div className="px-6 pb-6">
-        {/* Informações de contato */}
         <div className="space-y-4 pl-6">
           <div className="flex items-center gap-3 text-sm text-black">
             <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
