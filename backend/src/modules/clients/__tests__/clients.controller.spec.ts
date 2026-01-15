@@ -63,14 +63,14 @@ const mockClientResponse = {
   phone: '+5511999999999',
   cpf: '12345678901',
   advisorId: 'advisor-123',
+  userId: null,
+  riskProfile: 'MODERATE',
+  inviteStatus: 'PENDING',
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
 };
 
-const mockClientListResponse = {
-  items: [mockClientResponse],
-  total: 1,
-};
+const mockClientListResponse = [mockClientResponse];
 
 describe('ClientsController', () => {
   let controller: ClientsController;
