@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
-interface ModalClientProps {
+interface ClientModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
@@ -21,13 +21,13 @@ interface ModalClientProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
 }
 
-export default function ModalClient({
+export default function ClientModal({
   isOpen,
   onClose,
   title,
   selectedClient,
   size,
-}: ModalClientProps) {
+}: ClientModalProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

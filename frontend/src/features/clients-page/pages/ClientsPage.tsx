@@ -6,8 +6,8 @@ import type { Client, InviteStatus } from '../types/index.ts';
 import { Search, Plus, Users } from 'lucide-react';
 import ButtonSubmit from '@/components/ui/ButtonSubmit.tsx';
 import Select from '@/components/ui/Select.tsx';
-import StatsCardClient from '../components/StatsCardClient.tsx';
-import ModalClient from '../components/ModalClient.tsx';
+import ClientStatsCard from '../components/ClientStatsCard.tsx';
+import ClientModal from '../components/ClientModal.tsx';
 import NewClientModal from '../components/NewClientModal.tsx';
 
 // Mock data - replace with API call
@@ -102,7 +102,7 @@ export default function ClientsPage() {
   return (
     <>
       <PageTitle title="Clientes" />
-      <ModalClient
+      <ClientModal
         isOpen={isModalOpen && selectedClient !== null}
         onClose={handleCloseModal}
         selectedClient={selectedClient}
@@ -115,7 +115,7 @@ export default function ClientsPage() {
       />
       <div className="space-y-6">
         {/* Stats Cards */}
-        <StatsCardClient />
+        <ClientStatsCard />
 
         {/* Search and Filter Bar */}
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">

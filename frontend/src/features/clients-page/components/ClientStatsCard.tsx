@@ -63,7 +63,7 @@ const pendingToLinkClients = mockClients.filter(
   (c) => c.inviteStatus === 'PENDING',
 ).length;
 
-export default function StatsCardClient() {
+export default function ClientStatsCard() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="bg-slate-900 border border-[#2a2a2a] rounded-xl p-6">
