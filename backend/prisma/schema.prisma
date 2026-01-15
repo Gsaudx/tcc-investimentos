@@ -113,6 +113,7 @@ model Client {
   wallets Wallet[]
 
   @@index([advisorId])
+  @@unique([advisorId, cpf])
   @@map("clients")
 }
 
