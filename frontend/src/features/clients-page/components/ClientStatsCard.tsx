@@ -5,9 +5,7 @@ interface ClientStatsCardProps {
   clients: Client[];
 }
 
-export default function ClientStatsCard({
-  clients,
-}: ClientStatsCardProps) {
+export default function ClientStatsCard({ clients }: ClientStatsCardProps) {
   const linkedClients = clients.filter(
     (client) => client.inviteStatus === 'ACCEPTED',
   ).length;

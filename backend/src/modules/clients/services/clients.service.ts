@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '@/shared/prisma/prisma.service';
 import type { RiskProfile } from '@/generated/prisma/enums';
 import type { ClientResponse, ClientListResponse } from '../schemas';
