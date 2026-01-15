@@ -408,9 +408,12 @@ Quality checks run on PRs to main/master:
 | `AWS_ACCESS_KEY_ID`          | AWS credential                                           |
 | `AWS_SECRET_ACCESS_KEY`      | AWS credential                                           |
 | `CLOUDFRONT_DISTRIBUTION_ID` | CloudFront distribution ID                               |
-| `DEPLOY_ENABLED`             | Whether CI/CD should deploy to EC2                       |
+| `DEPLOY_EC2_ENABLED`         | Whether CI/CD should deploy to EC2                       |
 | `JWT_SECRET`                 | Secret key for JWT tokens (min 32 chars)                 |
 | `JWT_EXPIRES_IN`             | JWT expiration time (default: "12h")                     |
+| `COOKIE_SECURE`              | Force secure cookies in production (default: "true")     |
+| `COOKIE_DOMAIN`              | Cookie domain (optional)                                 |
+| `DOMAIN`                     | Caddy hostname (default: tcc-investimentos.duckdns.org)  |
 
 ---
 

@@ -58,6 +58,11 @@ jobs:
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
           echo "CORS_ORIGIN=${{ secrets.CORS_ORIGIN }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "JWT_EXPIRES_IN=${{ secrets.JWT_EXPIRES_IN || '12h' }}" >> .env
+          echo "COOKIE_SECURE=${{ secrets.COOKIE_SECURE || 'true' }}" >> .env
+          echo "COOKIE_DOMAIN=${{ secrets.COOKIE_DOMAIN }}" >> .env
+          echo "DOMAIN=${{ secrets.DOMAIN || 'tcc-investimentos.duckdns.org' }}" >> .env
           echo "NODE_ENV=production" >> .env
           
           # Pull new image and restart
