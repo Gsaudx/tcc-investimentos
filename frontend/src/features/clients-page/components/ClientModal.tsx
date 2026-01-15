@@ -101,18 +101,18 @@ export default function ClientModal({
       <div className="bg-gray-600 h-60 relative border-l border-r border-t border-gray-700 rounded-t-xl"></div>
 
       <div className="flex flex-col items-center -mt-[190px] relative z-10 px-6 ">
-          {/* {selectedClient?.profilePhoto ? (
+        {/* {selectedClient?.profilePhoto ? (
             <img
               src={selectedClient.profilePhoto}
               alt={selectedClient?.name || 'Cliente'}
               className="w-64 h-64 rounded-xl object-cover shadow-2xl ring-8 ring-white"
             />
           ) : ( */}
-          <div className="w-64 h-64 rounded-xl bg-blue-500 flex items-center justify-center shadow-2xl ring-2 ring-white">
-            <span className="text-6xl font-bold text-white">
-              {getInitial(selectedClient?.name)}
-            </span>
-          </div>
+        <div className="w-64 h-64 rounded-xl bg-blue-500 flex items-center justify-center shadow-2xl ring-2 ring-white">
+          <span className="text-6xl font-bold text-white">
+            {getInitial(selectedClient?.name)}
+          </span>
+        </div>
         {/* )} */}
 
         <div className="p-6 w-full flex flex-col items-start">
