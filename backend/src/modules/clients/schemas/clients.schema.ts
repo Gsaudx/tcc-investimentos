@@ -4,6 +4,33 @@ import { createApiResponseSchema } from '@/common/schemas';
 import { InviteStatus } from '../enums';
 import { RiskProfile } from '../enums/risk-profile.enum';
 
+const phoneSchema = z.preprocess(
+  (value) =>
+    typeof value === 'string' && value.trim() === '' ? undefined : value,
+  z
+    .string()
+    .regex(
+      /^\+\d{10,15}$/,
+      'Telefone deve estar no formato internacional (+DDI + numero)',
+    )
+    .optional(),
+);
+
+const nullablePhoneSchema = z.preprocess(
+  (value) => (typeof value === 'string' && value.trim() === '' ? null : value),
+  z
+    .union([
+      z
+        .string()
+        .regex(
+          /^\+\d{10,15}$/,
+          'Telefone deve estar no formato internacional (+DDI + numero)',
+        ),
+      z.null(),
+    ])
+    .optional(),
+);
+
 /**
  * Schema for creating a new client.
  * The advisorId is extracted from the JWT token, not from the request body.
@@ -14,11 +41,7 @@ export const CreateClientInputSchema = z.object({
     .min(2, 'Nome deve ter pelo menos 2 caracteres')
     .max(100, 'Nome deve ter no maximo 100 caracteres'),
   email: z.string().email('Email invalido').optional().or(z.literal('')),
-  phone: z
-    .string()
-    .min(10, 'Telefone deve ter pelo menos 10 digitos')
-    .optional()
-    .or(z.literal('')),
+  phone: phoneSchema,
   cpf: z
     .string()
     .length(11, 'CPF deve ter 11 digitos')
@@ -43,11 +66,7 @@ export const UpdateClientInputSchema = z.object({
     .max(100, 'Nome deve ter no maximo 100 caracteres')
     .optional(),
   email: z.string().email('Email invalido').optional().nullable(),
-  phone: z
-    .string()
-    .min(10, 'Telefone deve ter pelo menos 10 digitos')
-    .optional()
-    .nullable(),
+  phone: nullablePhoneSchema,
   riskProfile: z.nativeEnum(RiskProfile).optional(),
 });
 export class UpdateClientInputDto extends createZodDto(

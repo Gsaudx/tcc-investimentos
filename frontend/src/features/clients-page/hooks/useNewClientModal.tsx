@@ -75,7 +75,7 @@ export function useNewClientModal({
       },
       {
         isInvalid: !validateName(formData.name),
-        message: 'O nome deve conter de 3 a 100 caracteres.',
+        message: 'O nome deve conter de 2 a 100 caracteres.',
         inputName: 'name',
       },
       {
