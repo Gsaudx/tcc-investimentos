@@ -104,7 +104,7 @@ export function useNewClientModal({
 
     setErrors({});
 
-  const clientData: CreateClientInput = {
+    const clientData: CreateClientInput = {
       name: formatPostName(formData.name),
       cpf: formatPostCPF(formData.cpf),
       riskProfile: 'MODERATE' as RiskProfile,
