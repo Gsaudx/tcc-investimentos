@@ -2,16 +2,7 @@ import { z } from 'zod';
 import { createZodDto } from 'nestjs-zod';
 import { createApiResponseSchema } from '@/common/schemas';
 import { InviteStatus } from '../enums';
-
-/**
- * Risk profile enum matching Prisma schema
- */
-export const RiskProfileEnum = z.enum([
-  'CONSERVATIVE',
-  'MODERATE',
-  'AGGRESSIVE',
-]);
-export type RiskProfile = z.infer<typeof RiskProfileEnum>;
+import { RiskProfile } from '../enums/risk-profile.enum';
 
 /**
  * Schema for creating a new client.
@@ -32,7 +23,7 @@ export const CreateClientInputSchema = z.object({
     .string()
     .length(11, 'CPF deve ter 11 digitos')
     .regex(/^\d+$/, 'CPF deve conter apenas numeros'),
-  riskProfile: RiskProfileEnum.optional().default('MODERATE'),
+  riskProfile: z.nativeEnum(RiskProfile).optional().default('MODERATE'),
 });
 export class CreateClientInputDto extends createZodDto(
   CreateClientInputSchema,
@@ -54,7 +45,7 @@ export const UpdateClientInputSchema = z.object({
     .min(10, 'Telefone deve ter pelo menos 10 digitos')
     .optional()
     .nullable(),
-  riskProfile: RiskProfileEnum.optional(),
+  riskProfile: z.nativeEnum(RiskProfile).optional(),
 });
 export class UpdateClientInputDto extends createZodDto(
   UpdateClientInputSchema,
@@ -71,7 +62,7 @@ export const ClientResponseSchema = z.object({
   email: z.string().nullable(),
   cpf: z.string(),
   phone: z.string().nullable(),
-  riskProfile: RiskProfileEnum,
+  riskProfile: z.nativeEnum(RiskProfile),
   inviteStatus: z.nativeEnum(InviteStatus),
   createdAt: z.string(),
   updatedAt: z.string(),
