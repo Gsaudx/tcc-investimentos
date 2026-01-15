@@ -23,7 +23,10 @@ export const CreateClientInputSchema = z.object({
     .string()
     .length(11, 'CPF deve ter 11 digitos')
     .regex(/^\d+$/, 'CPF deve conter apenas numeros'),
-  riskProfile: z.nativeEnum(RiskProfile).optional().default('MODERATE'),
+  riskProfile: z
+    .nativeEnum(RiskProfile)
+    .optional()
+    .default(RiskProfile.MODERATE),
 });
 export class CreateClientInputDto extends createZodDto(
   CreateClientInputSchema,
