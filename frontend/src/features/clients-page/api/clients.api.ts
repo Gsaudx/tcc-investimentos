@@ -1,5 +1,10 @@
 import { api } from '@/lib/axios';
-import type { Client, CreateClientInput, UpdateClientInput } from '../types';
+import type {
+  Client,
+  CreateClientInput,
+  UpdateClientInput,
+  InviteResponse,
+} from '../types';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -30,5 +35,23 @@ export const clientsApi = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/clients/${id}`);
+  },
+
+  generateInvite: async (clientId: string): Promise<InviteResponse> => {
+    const response = await api.post<ApiResponse<InviteResponse>>(
+      `/clients/${clientId}/invite`
+    );
+    return response.data.data;
+  },
+
+  getInviteStatus: async (clientId: string): Promise<InviteResponse | null> => {
+    const response = await api.get<ApiResponse<InviteResponse | null>>(
+      `/clients/${clientId}/invite`
+    );
+    return response.data.data;
+  },
+
+  revokeInvite: async (clientId: string): Promise<void> => {
+    await api.delete(`/clients/${clientId}/invite`);
   },
 };

@@ -25,7 +25,7 @@ export function InviteTokenPrompt({ onSuccess }: InviteTokenPromptProps) {
         onSuccess();
       }, 2000);
     } catch {
-      setError('Token invalido ou expirado. Verifique com seu assessor.');
+      setError('Convite invalido ou expirado. Verifique com seu assessor.');
     } finally {
       setIsLoading(false);
     }

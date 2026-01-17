@@ -235,7 +235,7 @@ export class ClientsInviteService {
       where: { id: clientId },
       data: {
         inviteToken: null,
-        inviteStatus: InviteStatus.REJECTED,
+        inviteStatus: InviteStatus.PENDING,
         inviteExpiresAt: null,
       },
     });

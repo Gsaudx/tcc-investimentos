@@ -151,7 +151,7 @@ export class ClientsInviteController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Token invalido ou expirado',
+    description: 'Convite invalido ou expirado',
     type: ApiErrorResponseDto,
   })
   @ApiResponse({

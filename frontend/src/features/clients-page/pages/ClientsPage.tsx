@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import PageTitle from '@/components/layout/PageTitle';
 import { ClientCard } from '../components/ClientCard';
 import type { Client, InviteStatus } from '../types/index.ts';
@@ -9,16 +9,26 @@ import Select from '@/components/ui/Select.tsx';
 import ClientStatsCard from '../components/ClientStatsCard.tsx';
 import ClientModal from '../components/ClientModal.tsx';
 import NewClientModal from '../components/NewClientModal.tsx';
+import DeleteClientDialog from '../components/DeleteClientDialog.tsx';
+import EditClientModal from '../components/EditClientModal.tsx';
 import { useClients } from '../api';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner.tsx';
+
+type ModalView = 'none' | 'details' | 'edit' | 'delete' | 'new';
 
 export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | InviteStatus>('all');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [modalView, setModalView] = useState<ModalView>('none');
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   const { data: clients = [], isLoading, isError } = useClients();
+
+  // Derive selectedClient from fresh clients list
+  const selectedClient = useMemo(() => {
+    if (!selectedClientId) return null;
+    return clients.find((c) => c.id === selectedClientId) ?? null;
+  }, [clients, selectedClientId]);
 
   const filteredClients = clients.filter((client) => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -40,29 +50,62 @@ export default function ClientsPage() {
     { value: 'REJECTED', label: 'Rejeitados' },
   ];
 
-  const handleOpenModal = (client: Client) => {
-    setSelectedClient(client);
-    setIsModalOpen(true);
+  const handleOpenClientDetails = (client: Client) => {
+    setSelectedClientId(client.id);
+    setModalView('details');
+  };
+
+  const handleOpenNewClient = () => {
+    setSelectedClientId(null);
+    setModalView('new');
+  };
+
+  const handleSwitchToEdit = () => {
+    setModalView('edit');
+  };
+
+  const handleSwitchToDelete = () => {
+    setModalView('delete');
   };
 
   const handleCloseModal = () => {
-    setSelectedClient(null);
-    setIsModalOpen(false);
+    setSelectedClientId(null);
+    setModalView('none');
   };
 
   return (
     <>
       <PageTitle title="Clientes" />
+
+      {/* Details Modal */}
       <ClientModal
-        isOpen={isModalOpen && selectedClient !== null}
+        isOpen={modalView === 'details' && selectedClient !== null}
         onClose={handleCloseModal}
         selectedClient={selectedClient}
+        onSwitchToEdit={handleSwitchToEdit}
+        onSwitchToDelete={handleSwitchToDelete}
         size="xxl"
       />
+
+      {/* New Client Modal */}
       <NewClientModal
-        isOpen={isModalOpen && selectedClient === null}
+        isOpen={modalView === 'new'}
         onClose={handleCloseModal}
         size="xxl"
+      />
+
+      {/* Edit Modal */}
+      <EditClientModal
+        isOpen={modalView === 'edit'}
+        onClose={handleCloseModal}
+        client={selectedClient}
+      />
+
+      {/* Delete Dialog */}
+      <DeleteClientDialog
+        isOpen={modalView === 'delete'}
+        onClose={handleCloseModal}
+        client={selectedClient}
       />
       <div className="space-y-6">
         <ClientStatsCard clients={clients} />
@@ -89,10 +132,7 @@ export default function ClientsPage() {
             <ButtonSubmit
               icon={<Plus className="w-5 h-5" />}
               className="!mt-0 !w-auto h-11"
-              onClick={() => {
-                setSelectedClient(null);
-                setIsModalOpen(true);
-              }}
+              onClick={handleOpenNewClient}
             >
               Novo Cliente
             </ButtonSubmit>
@@ -117,7 +157,7 @@ export default function ClientsPage() {
                 <ClientCard
                   key={client.id}
                   client={client}
-                  onClick={() => handleOpenModal(client)}
+                  onClick={() => handleOpenClientDetails(client)}
                 />
               ))}
             </div>

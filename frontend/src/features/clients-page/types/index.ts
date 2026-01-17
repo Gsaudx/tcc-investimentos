@@ -31,6 +31,25 @@ export type CreateClientInput = components['schemas']['CreateClientInputDto'];
  */
 export type UpdateClientInput = components['schemas']['UpdateClientInputDto'];
 
+/**
+ * Invite response from the API (contains token and expiry)
+ */
+export type InviteResponse = NonNullable<
+  components['schemas']['InviteApiResponseDto']['data']
+>;
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Checks if an invite token has expired
+ */
+export function isInviteExpired(expiresAt: string | null | undefined): boolean {
+  if (!expiresAt) return false;
+  return new Date(expiresAt) < new Date();
+}
+
 // ============================================================================
 // Frontend-specific types (not from backend)
 // ============================================================================

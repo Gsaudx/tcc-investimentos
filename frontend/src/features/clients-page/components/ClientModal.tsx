@@ -1,17 +1,21 @@
 import ModalBase from '@/components/layout/ModalBase';
-import type { Client } from '../types';
 import {
-  Briefcase,
-  Flag,
+  riskProfileLabels,
+  riskProfileColors,
+  inviteStatusLabels,
+  inviteStatusColors,
+  type Client,
+} from '../types';
+import {
   Mail,
-  MapPin,
-  MoreVertical,
-  Pencil,
   Phone,
+  CreditCard,
+  Calendar,
+  Pencil,
   Trash2,
   X,
 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import InviteLinkSection from './InviteLinkSection';
 
 interface ClientModalProps {
   isOpen: boolean;
@@ -19,138 +23,183 @@ interface ClientModalProps {
   title?: string;
   selectedClient: Client | null;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
+  onSwitchToEdit?: () => void;
+  onSwitchToDelete?: () => void;
 }
+
+function formatCpf(cpf: string): string {
+  const digits = cpf.replace(/\D/g, '');
+  if (digits.length !== 11) return cpf;
+  return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function getInitials(name: string): string {
+  const words = name.trim().split(' ');
+  if (words.length === 1) {
+    return words[0].charAt(0).toUpperCase();
+  }
+  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+}
+
+// Risk profile gradient backgrounds (subtle, muted tones)
+const riskProfileGradients: Record<Client['riskProfile'], string> = {
+  CONSERVATIVE: 'from-blue-900/80 to-slate-900',
+  MODERATE: 'from-amber-900/70 to-slate-900',
+  AGGRESSIVE: 'from-orange-900/70 to-slate-900',
+};
 
 export default function ClientModal({
   isOpen,
   onClose,
-  title,
   selectedClient,
   size,
+  onSwitchToEdit,
+  onSwitchToDelete,
 }: ClientModalProps) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  if (!selectedClient) return null;
 
-  const getInitial = (name: string | undefined) => {
-    return name?.charAt(0).toUpperCase() || '?';
-  };
-
-  const handleClose = () => {
-    setIsDropdownOpen(false);
-    onClose();
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isDropdownOpen]);
+  const gradient = riskProfileGradients[selectedClient.riskProfile];
 
   return (
     <ModalBase
       isOpen={isOpen}
-      onClose={handleClose}
-      title={title}
+      onClose={onClose}
       size={size}
-      backgroundColor="bg-white"
+      backgroundColor="bg-slate-900"
+      minHeight={0}
     >
-      <div className="absolute top-4 right-4 z-20" ref={dropdownRef}>
-        <div className="flex items-center gap-2">
+      {/* Header with gradient */}
+      <div className={`relative bg-gradient-to-r ${gradient} p-6 rounded-t-xl`}>
+        {/* Action buttons */}
+        <div className="absolute top-4 right-4 flex items-center gap-2">
           <button
-            className="text-white hover:text-gray-200 bg-black/20 rounded-full p-2 backdrop-blur-sm"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            onClick={onSwitchToEdit}
+            className="p-2 bg-white/20 hover:bg-white/30 rounded-lg backdrop-blur-sm transition-colors"
+            title="Editar cliente"
           >
-            <MoreVertical size={20} />
+            <Pencil size={18} className="text-white" />
           </button>
           <button
-            className="text-white hover:text-gray-200 bg-black/20 rounded-full p-2 backdrop-blur-sm"
-            onClick={handleClose}
+            onClick={onSwitchToDelete}
+            className="p-2 bg-white/20 hover:bg-white/30 rounded-lg backdrop-blur-sm transition-colors"
+            title="Excluir cliente"
           >
-            <X size={20} />
+            <Trash2 size={18} className="text-white" />
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 bg-white/20 hover:bg-white/30 rounded-lg backdrop-blur-sm transition-colors"
+            title="Fechar"
+          >
+            <X size={18} className="text-white" />
           </button>
         </div>
 
-        {isDropdownOpen && (
-          <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-30">
-            <button className="w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2 transition-all">
-              <Pencil size={16} />
-              <span>Editar</span>
-            </button>
-            <button className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-all">
-              <Trash2 size={16} />
-              <span>Excluir</span>
-            </button>
-            <button className="w-full px-4 py-2 text-sm text-amber-600 hover:bg-amber-50 flex items-center gap-2 transition-all">
-              <Flag size={16} />
-              <span>Inativar</span>
-            </button>
+        {/* Client info */}
+        <div className="flex items-center gap-4 mt-6">
+          {/* Avatar */}
+          <div className="w-20 h-20 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+            <span className="text-3xl font-bold text-white">
+              {getInitials(selectedClient.name)}
+            </span>
           </div>
-        )}
-      </div>
 
-      <div className="bg-gray-600 h-60 relative border-l border-r border-t border-gray-700 rounded-t-xl"></div>
-
-      <div className="flex flex-col items-center -mt-[190px] relative z-10 px-6 ">
-        {/* {selectedClient?.profilePhoto ? (
-            <img
-              src={selectedClient.profilePhoto}
-              alt={selectedClient?.name || 'Cliente'}
-              className="w-64 h-64 rounded-xl object-cover shadow-2xl ring-8 ring-white"
-            />
-          ) : ( */}
-        <div className="w-64 h-64 rounded-xl bg-blue-500 flex items-center justify-center shadow-2xl ring-2 ring-white">
-          <span className="text-6xl font-bold text-white">
-            {getInitial(selectedClient?.name)}
-          </span>
-        </div>
-        {/* )} */}
-
-        <div className="p-6 w-full flex flex-col items-start">
-          <h2 className="text-4xl font-bold text-black mt-4">
-            {selectedClient?.name}
-          </h2>
-          <p className="text-md text-black mt-1 mb-6">
-            {selectedClient?.riskProfile}
-          </p>
+          {/* Name and badges */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-2xl font-bold text-white truncate">
+              {selectedClient.name}
+            </h2>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-white/10 text-white/90 border border-white/20">
+                {riskProfileLabels[selectedClient.riskProfile]}
+              </span>
+              <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-white/10 text-white/90 border border-white/20">
+                {inviteStatusLabels[selectedClient.inviteStatus]}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="px-6 pb-6">
-        <div className="space-y-4 pl-6">
-          <div className="flex items-center gap-3 text-sm text-black">
-            <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <Mail size={18} className="text-blue-600" />
+      {/* Content */}
+      <div className="p-6 space-y-6">
+        {/* Contact Information */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+            Informacoes de Contato
+          </h3>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <Mail size={18} className="text-blue-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-gray-500">E-mail</p>
+                <p className="text-white truncate">
+                  {selectedClient.email || 'Nao informado'}
+                </p>
+              </div>
             </div>
-            <span className="font-medium">{selectedClient?.email}</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-black">
-            <div className="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-              <Phone size={18} className="text-green-600" />
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                <Phone size={18} className="text-green-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-gray-500">Telefone</p>
+                <p className="text-white">
+                  {selectedClient.phone || 'Nao informado'}
+                </p>
+              </div>
             </div>
-            <span className="font-medium">{selectedClient?.phone}</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-black">
-            <div className="w-9 h-9 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
-              <MapPin size={18} className="text-red-600" />
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <CreditCard size={18} className="text-purple-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-gray-500">CPF</p>
+                <p className="text-white font-mono">
+                  {formatCpf(selectedClient.cpf)}
+                </p>
+              </div>
             </div>
-            <span className="font-medium">teste</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm text-black">
-            <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-              <Briefcase size={18} className="text-purple-600" />
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-slate-500/20 flex items-center justify-center flex-shrink-0">
+                <Calendar size={18} className="text-slate-400" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-gray-500">Cliente desde</p>
+                <p className="text-white">
+                  {formatDate(selectedClient.createdAt)}
+                </p>
+              </div>
             </div>
-            <span className="font-medium">teste</span>
           </div>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-slate-800" />
+
+        {/* Invite Section */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+            Vinculacao de Conta
+          </h3>
+          <InviteLinkSection
+            clientId={selectedClient.id}
+            clientInviteStatus={selectedClient.inviteStatus}
+          />
         </div>
       </div>
     </ModalBase>
