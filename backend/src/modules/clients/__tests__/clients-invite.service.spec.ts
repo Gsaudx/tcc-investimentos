@@ -312,7 +312,7 @@ describe('ClientsInviteService', () => {
         where: { id: 'client-123' },
         data: {
           inviteToken: null,
-          inviteStatus: InviteStatus.REJECTED,
+          inviteStatus: InviteStatus.PENDING,
           inviteExpiresAt: null,
         },
       });
