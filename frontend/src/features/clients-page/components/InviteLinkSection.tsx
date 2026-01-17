@@ -13,7 +13,6 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useGetInviteStatus, useGenerateInvite, useRevokeInvite } from '../api';
 import {
   isInviteExpired,
-  inviteStatusLabels,
   type InviteStatus,
 } from '../types';
 

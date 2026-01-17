@@ -96,6 +96,7 @@ export default function ClientsPage() {
 
       {/* Edit Modal */}
       <EditClientModal
+        key={selectedClient?.id ?? 'edit-client'}
         isOpen={modalView === 'edit'}
         onClose={handleCloseModal}
         client={selectedClient}

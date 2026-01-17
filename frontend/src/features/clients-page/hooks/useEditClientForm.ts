@@ -1,4 +1,4 @@
-import { useState, useEffect, type ChangeEvent } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { getFormErrors } from '@/lib/utils';
 import type { Client, UpdateClientInput, RiskProfile } from '../types';
@@ -15,30 +15,34 @@ interface UseEditClientFormProps {
   onSubmit: (data: UpdateClientInput) => void;
 }
 
+const EMPTY_FORM_DATA: EditClientFormData = {
+  name: '',
+  email: '',
+  phone: '',
+  riskProfile: 'MODERATE',
+};
+
+function getInitialFormData(client: Client | null): EditClientFormData {
+  if (!client) {
+    return { ...EMPTY_FORM_DATA };
+  }
+
+  return {
+    name: client.name,
+    email: client.email ?? '',
+    phone: client.phone ?? '',
+    riskProfile: client.riskProfile,
+  };
+}
+
 export function useEditClientForm({
   client,
   onSubmit,
 }: UseEditClientFormProps) {
-  const [formData, setFormData] = useState<EditClientFormData>({
-    name: '',
-    email: '',
-    phone: '',
-    riskProfile: 'MODERATE',
-  });
+  const [formData, setFormData] = useState<EditClientFormData>(() =>
+    getInitialFormData(client),
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Sync form with client data when client changes
-  useEffect(() => {
-    if (client) {
-      setFormData({
-        name: client.name,
-        email: client.email ?? '',
-        phone: client.phone ?? '',
-        riskProfile: client.riskProfile,
-      });
-      setErrors({});
-    }
-  }, [client]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -120,14 +124,7 @@ export function useEditClientForm({
   };
 
   const resetForm = () => {
-    if (client) {
-      setFormData({
-        name: client.name,
-        email: client.email ?? '',
-        phone: client.phone ?? '',
-        riskProfile: client.riskProfile,
-      });
-    }
+    setFormData(getInitialFormData(client));
     setErrors({});
   };
 
