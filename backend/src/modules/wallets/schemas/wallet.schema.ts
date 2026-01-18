@@ -39,7 +39,9 @@ export type CashOperationType = z.infer<typeof CashOperationType>;
 export const CashOperationInputSchema = z.object({
   type: CashOperationType,
   amount: z.number().positive('Valor deve ser positivo'),
-  date: z.string().datetime({ message: 'Data invalida (formato ISO esperado)' }),
+  date: z
+    .string()
+    .datetime({ message: 'Data invalida (formato ISO esperado)' }),
   idempotencyKey: z.string().min(1, 'Chave de idempotencia obrigatoria'),
 });
 export class CashOperationInputDto extends createZodDto(
@@ -58,7 +60,9 @@ export const TradeInputSchema = z.object({
     .toUpperCase(),
   quantity: z.number().positive('Quantidade deve ser positiva'),
   price: z.number().positive('Preco deve ser positivo'),
-  date: z.string().datetime({ message: 'Data invalida (formato ISO esperado)' }),
+  date: z
+    .string()
+    .datetime({ message: 'Data invalida (formato ISO esperado)' }),
   idempotencyKey: z.string().min(1, 'Chave de idempotencia obrigatoria'),
 });
 export class TradeInputDto extends createZodDto(TradeInputSchema) {}
