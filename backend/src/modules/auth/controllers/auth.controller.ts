@@ -14,11 +14,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { Response as ExpressResponse } from 'express';
 import { ApiResponseDto, ApiErrorResponseDto } from '@/common/schemas';
 import type { ApiResponse as ApiResponseType } from '@/common/schemas';
-import { env } from '@/config';
+import { env, parseJwtExpirationToMs } from '@/config';
 import { AuthService } from '../services/auth.service';
 import { RegisterDto, LoginDto, UserProfileApiResponseDto } from '../schemas';
 import type { UserProfile } from '../schemas';
 import { AUTH_COOKIE_NAME, type RequestUser } from '../strategies/jwt.strategy';
+import { LocalAuthGuard } from '../guards/local-auth.guard';
 
 interface RequestWithUser extends Request {
   user: RequestUser;
@@ -29,7 +30,7 @@ interface RequestWithProfile extends Request {
 }
 
 function setAuthCookie(res: ExpressResponse, token: string): void {
-  const maxAge = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
+  const maxAge = parseJwtExpirationToMs(env.JWT_EXPIRES_IN);
 
   res.cookie(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
@@ -58,9 +59,9 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({
-    summary: 'Registrar novo assessor',
+    summary: 'Registrar novo usuario',
     description:
-      'Cria uma nova conta de assessor na plataforma. Define um cookie HttpOnly com o token JWT.',
+      'Cria uma nova conta na plataforma. Define um cookie HttpOnly com o token JWT.',
   })
   @ApiResponse({
     status: 201,
@@ -83,7 +84,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(LocalAuthGuard)
   @ApiOperation({
     summary: 'Autenticar usuario',
     description:

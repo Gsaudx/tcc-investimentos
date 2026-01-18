@@ -8,7 +8,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiTags,
-  ApiBearerAuth,
+  ApiCookieAuth,
 } from '@nestjs/swagger';
 import { ApiResponseDto, ApiErrorResponseDto } from '@/common/schemas';
 import type { ApiResponse as ApiResponseType } from '@/common/schemas';
@@ -20,10 +20,9 @@ import { HealthApiResponseDto } from '../schemas';
 import type { HealthResponse } from '../schemas';
 
 @ApiTags('Health')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
-@UseGuards(RolesGuard)
-@Roles('ADVISOR')
+@ApiCookieAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 @Controller('health')
 export class HealthController {
   constructor(private readonly healthService: HealthService) {}
@@ -32,8 +31,7 @@ export class HealthController {
   @ApiOperation({
     summary: 'Verifica status da API',
     description:
-      'Retorna o status da aplicação e a conexão com o banco de dados. ' +
-      'Use este endpoint para monitoramento e health checks de infraestrutura.',
+      'Retorna o status da aplicacao e a conexao com o banco de dados. Use este endpoint para monitoramento e health checks de infraestrutura.',
   })
   @ApiResponse({
     status: 200,
@@ -42,7 +40,7 @@ export class HealthController {
   })
   @ApiResponse({
     status: 401,
-    description: 'Token JWT inválido ou ausente',
+    description: 'Token JWT invalido ou ausente',
     type: ApiErrorResponseDto,
   })
   @ApiResponse({

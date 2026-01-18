@@ -2,24 +2,45 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import { PrismaService } from '../src/shared/prisma/prisma.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
+  const originalEnv = process.env;
 
   beforeEach(async () => {
+    jest.resetModules();
+    process.env = {
+      ...originalEnv,
+      DATABASE_URL:
+        'postgresql://admin:password123@localhost:5432/tcc_investimentos?schema=public',
+      JWT_SECRET: 'test-secret-test-secret-test-secret-1234',
+      CORS_ORIGIN: 'http://localhost:5173',
+      NODE_ENV: 'test',
+    };
+
+    const { AppModule } = await import('../src/app.module');
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(PrismaService)
+      .useValue({
+        $connect: jest.fn(),
+        $disconnect: jest.fn(),
+        $queryRaw: jest.fn(),
+      })
+      .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  afterAll(() => {
+    process.env = originalEnv;
+  });
+
+  it('/health (GET)', () => {
+    return request(app.getHttpServer()).get('/health').expect(401);
   });
 });

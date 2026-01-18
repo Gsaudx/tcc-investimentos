@@ -8,6 +8,14 @@ type InputPhoneProps = {
   onChange?: (value: string | undefined) => void;
   disabled?: boolean;
   required?: boolean;
+  label?: string;
+  hideLabel?: boolean;
+  containerClassName?: string;
+  labelClassName?: string;
+  inputClassName?: string;
+  size?: 'default' | 'lg';
+  error?: boolean;
+  errorMessage?: string;
 };
 
 export default function InputPhone({
@@ -16,19 +24,49 @@ export default function InputPhone({
   onChange,
   disabled,
   required,
+  label = 'Telefone',
+  hideLabel = false,
+  containerClassName = 'mb-3 flex flex-col gap-1.5 sm:gap-2',
+  labelClassName = 'text-white text-sm sm:text-sm font-medium',
+  inputClassName,
+  size = 'default',
+  error = false,
+  errorMessage,
 }: InputPhoneProps) {
   const handleChange = (newValue: Value) => {
     onChange?.(newValue);
   };
 
+  // Generate unique class name for scoped styles
+  const uniqueClass = inputId ? `phone-input-${inputId}` : 'phone-input-custom';
+
+  // Determine input background color from inputClassName or use default
+  const bgColor = inputClassName?.includes('bg-slate-800')
+    ? 'rgb(30 41 59)'
+    : 'rgb(30 41 59)';
+  const borderColor = inputClassName?.includes('border-slate-600')
+    ? 'rgb(71 85 105)'
+    : 'rgb(71 85 105)';
+  const focusBorderColor = inputClassName?.includes('focus:border-slate-500')
+    ? 'rgb(100 116 139)'
+    : 'rgb(96 165 250)';
+
+  // Padding based on size prop
+  // default: py-2.5 px-3 (0.625rem 0.75rem) - matches register form
+  // lg: py-3 px-4 (0.75rem 1rem) - matches modal inputs
+  const padding = size === 'lg' ? '0.75rem 1rem' : '0.625rem 0.75rem';
+  const countryPadding = size === 'lg' ? '0.75rem 1rem' : '0.625rem 0.75rem';
+
   return (
-    <div className="mb-3 flex flex-col gap-1.5 sm:gap-2">
-      <label
-        htmlFor={inputId}
-        className="text-white text-sm sm:text-sm font-medium"
-      >
-        Telefone
-      </label>
+    <div className={containerClassName}>
+      {!hideLabel && (
+        <label
+          htmlFor={inputId}
+          className={error ? `${labelClassName} text-red-500` : labelClassName}
+        >
+          {label}
+        </label>
+      )}
       <PhoneInput
         international
         defaultCountry="BR"
@@ -37,72 +75,66 @@ export default function InputPhone({
         id={inputId}
         disabled={disabled}
         required={required}
-        className="phone-input-custom"
+        className={uniqueClass}
         limitMaxLength={true}
       />
+      {error && errorMessage && (
+        <span className="text-red-500 text-sm mt-1">{errorMessage}</span>
+      )}
       <style>{`
-        .phone-input-custom {
+        .${uniqueClass} {
           display: flex;
           gap: 0.5rem;
         }
-        .phone-input-custom .PhoneInputCountry {
-          background-color: rgb(30 41 59);
-          border: 1px solid rgb(71 85 105);
+        .${uniqueClass} .PhoneInputCountry {
+          background-color: ${bgColor};
+          border: 1px solid ${error ? '#ef4444' : borderColor};
           border-radius: 0.5rem;
-          padding: 0.625rem 0.75rem;
+          padding: ${countryPadding};
           display: flex;
           align-items: center;
           gap: 0.5rem;
         }
-        .phone-input-custom .PhoneInputCountrySelect {
+        .${uniqueClass} .PhoneInputCountrySelect {
           background: transparent;
           border: none;
           color: white;
           outline: none;
           cursor: pointer;
         }
-        .phone-input-custom .PhoneInputCountrySelect option {
-          background-color: rgb(30 41 59);
+        .${uniqueClass} .PhoneInputCountrySelect option {
+          background-color: ${bgColor};
           color: white;
         }
-        .phone-input-custom .PhoneInputCountryIcon {
+        .${uniqueClass} .PhoneInputCountryIcon {
           width: 1.25rem;
           height: auto;
         }
-        .phone-input-custom .PhoneInputCountryIconImg {
+        .${uniqueClass} .PhoneInputCountryIconImg {
           width: 100%;
           height: auto;
         }
-        .phone-input-custom input {
+        .${uniqueClass} input {
           flex: 1;
-          background-color: rgb(30 41 59);
-          border: 1px solid rgb(71 85 105);
+          background-color: ${bgColor};
+          border: 1px solid ${error ? '#ef4444' : borderColor};
           border-radius: 0.5rem;
-          padding: 0.625rem 0.75rem;
+          padding: ${padding};
           color: white;
           font-size: 1rem;
           outline: none;
           transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .phone-input-custom input::placeholder {
+        .${uniqueClass} input::placeholder {
           color: rgb(148 163 184);
         }
-        .phone-input-custom input:focus {
-          border-color: rgb(96 165 250);
-          box-shadow: 0 0 0 1px rgb(96 165 250);
+        .${uniqueClass} input:focus {
+          border-color: ${error ? '#ef4444' : focusBorderColor};
+          box-shadow: 0 0 0 1px ${error ? '#ef4444' : focusBorderColor};
         }
-        .phone-input-custom input:disabled {
+        .${uniqueClass} input:disabled {
           opacity: 0.5;
           cursor: not-allowed;
-        }
-        @media (min-width: 640px) {
-          .phone-input-custom input {
-            font-size: 0.875rem;
-            padding: 0.5rem 1rem;
-          }
-          .phone-input-custom .PhoneInputCountry {
-            padding: 0.5rem 0.75rem;
-          }
         }
       `}</style>
     </div>

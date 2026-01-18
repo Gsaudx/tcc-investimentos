@@ -1,10 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HealthCheckPage } from '@/features/health-check';
-import { ProtectedRoute, useAuth } from '@/features/auth';
-import { HomePageAdvisor } from '@/features/home';
-import { HomePageClient } from '@/features/home';
+import { useAuth } from '@/features/auth';
+import { ProtectedLayout } from '@/components/layout/ProtectedLayout';
+import { NotFound } from '@/components/layout/NotFound';
+import { HomePageAdvisor, HomePageClient } from '@/features/home';
 import LoginPage from '@/features/login-register/pages/LoginPage';
 import RegisterPage from '@/features/login-register/pages/RegisterPage';
+import ClientsPage from '@/features/clients-page/pages/ClientsPage';
 
 function RoleBasedRedirect() {
   const { user } = useAuth();
@@ -18,50 +20,36 @@ export function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Root redirect to role-based home */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <RoleBasedRedirect />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Legacy /home redirect */}
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <RoleBasedRedirect />
-            </ProtectedRoute>
-          }
-        />
-
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/healthcheck" element={<HealthCheckPage />} />
 
-        {/* Advisor routes */}
-        <Route
-          path="/advisor/home"
-          element={
-            <ProtectedRoute allowedRoles={['ADVISOR', 'ADMIN']}>
-              <HomePageAdvisor />
-            </ProtectedRoute>
-          }
-        />
+        {/* Admin-only routes */}
+        <Route element={<ProtectedLayout allowedRoles={['ADMIN']} />}>
+          <Route path="/admin/health" element={<HealthCheckPage />} />
+        </Route>
 
-        {/* Client routes */}
+        {/* Advisor layout - persists across child route changes */}
         <Route
-          path="/client/home"
-          element={
-            <ProtectedRoute allowedRoles={['CLIENT']}>
-              <HomePageClient />
-            </ProtectedRoute>
-          }
-        />
+          element={<ProtectedLayout allowedRoles={['ADVISOR', 'ADMIN']} />}
+        >
+          <Route path="/advisor/home" element={<HomePageAdvisor />} />
+          <Route path="/clients" element={<ClientsPage />} />
+        </Route>
+
+        {/* Client layout */}
+        <Route element={<ProtectedLayout allowedRoles={['CLIENT']} />}>
+          <Route path="/client/home" element={<HomePageClient />} />
+        </Route>
+
+        {/* Protected redirects */}
+        <Route element={<ProtectedLayout />}>
+          <Route path="/" element={<RoleBasedRedirect />} />
+          <Route path="/home" element={<RoleBasedRedirect />} />
+        </Route>
+
+        {/* 404 Not Found - catch all */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

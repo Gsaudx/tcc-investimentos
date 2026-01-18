@@ -13,7 +13,7 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
+  ApiCookieAuth,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiResponseDto, ApiErrorResponseDto } from '@/common/schemas';
@@ -32,7 +32,7 @@ import type { InviteResponse, AcceptInviteResponse } from '../schemas';
 @ApiTags('Clients')
 @Controller('clients')
 @UseGuards(AuthGuard('jwt'))
-@ApiBearerAuth()
+@ApiCookieAuth()
 export class ClientsInviteController {
   constructor(private readonly clientsInviteService: ClientsInviteService) {}
 
@@ -136,11 +136,13 @@ export class ClientsInviteController {
   }
 
   @Post('invite/accept')
+  @UseGuards(RolesGuard)
+  @Roles('CLIENT')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Aceitar convite',
     description:
-      'Aceita um convite e vincula a conta do usuario autenticado ao perfil de cliente.',
+      'Aceita um convite e vincula a conta do usuario autenticado ao perfil de cliente. Apenas usuarios com role CLIENT podem aceitar convites.',
   })
   @ApiResponse({
     status: 200,
@@ -149,7 +151,12 @@ export class ClientsInviteController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Token invalido ou expirado',
+    description: 'Convite invalido ou expirado',
+    type: ApiErrorResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Apenas usuarios com role CLIENT podem aceitar convites',
     type: ApiErrorResponseDto,
   })
   @ApiResponse({

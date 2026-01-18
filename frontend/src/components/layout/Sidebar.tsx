@@ -2,9 +2,6 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
-  Wallet,
-  TrendingUp,
-  Settings,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -16,13 +13,13 @@ interface NavItem {
   icon: React.ElementType;
 }
 
-// TODO: Customize the sidebar icons based on the current modules and the access (advisor/client)
-const navItems: NavItem[] = [
-  { name: 'Dashboard', href: '/home', icon: LayoutDashboard },
+const advisorNavItems: NavItem[] = [
+  { name: 'Dashboard', href: '/advisor/home', icon: LayoutDashboard },
   { name: 'Clientes', href: '/clients', icon: Users },
-  { name: 'Carteiras', href: '/wallets', icon: Wallet },
-  { name: 'Otimizacao', href: '/optimization', icon: TrendingUp },
-  { name: 'Configuracoes', href: '/settings', icon: Settings },
+];
+
+const clientNavItems: NavItem[] = [
+  { name: 'Inicio', href: '/client/home', icon: LayoutDashboard },
 ];
 
 interface SidebarProps {
@@ -36,6 +33,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
   const userInitial = user?.name?.charAt(0).toUpperCase() ?? 'A';
   const userName = user?.name ?? 'Assessor';
+  const navItems = user?.role === 'CLIENT' ? clientNavItems : advisorNavItems;
 
   return (
     <aside
